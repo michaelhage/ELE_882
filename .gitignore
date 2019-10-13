@@ -16,4 +16,6 @@ Images/
 *.tiff
 *.png
 *.wav
+*.xml
+*.iml
 
