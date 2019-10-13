@@ -1,0 +1,19 @@
+#Folder to ignore 
+Photos/
+Tutorial/
+.ipynb_checkpoints/
+__pycache__/
+venv/
+Images/
+
+
+#Files extension to ignore
+
+*.pdf
+*.aux
+*.log
+*.jpg
+*.tiff
+*.png
+*.wav
+
