@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import lab1_functions as fl
 
-# Section 2.1
-
+# # Section 2.1
+#
 # # Question 1
 #
 # # Image paths
@@ -22,8 +22,7 @@ import lab1_functions as fl
 #
 # # Display both images
 # fl.display_multiple_images([img_1, out_img])
-#
-#
+
 # # Question 2
 #
 # # Image paths
@@ -42,8 +41,7 @@ import lab1_functions as fl
 # # display the images
 # img_arr = [img_1, img_2, img_mask, out_img]
 # fl.display_multiple_images(img_arr)
-#
-#
+
 # # Question 3
 #
 # # Image paths
@@ -69,7 +67,6 @@ import lab1_functions as fl
 # # Display images (only the first one and the output)
 # fl.display_multiple_images([img_arr[0], img_arr[4]])
 #
-#
 # # Section 2.2
 #
 # # Question 1
@@ -84,51 +81,50 @@ import lab1_functions as fl
 #
 # fl.display_multiple_images([img,out_img])
 #
-# fl.display_histogram(img)
-# fl.display_histogram(out_img)
-#
-#
 # # Question 2
-#
-# # Image paths
-# photo_path_1 = "Images/Section2.2 - Q2/7.1.01.tiff"
-# photo_path_2 = "Images/Section2.2 - Q2/7.1.02.tiff"
-#
-# # Define parameters
-# r1 = 70
-# s1 = 0
-# r2 = 140
-# s2 = 255
-#
-# img = cv2.imread(photo_path_1, 0)
-#
-# out_img = fl.contrast_piecewise(img, r1, s1, r2, s2)
-#
-# fl.display_multiple_images([img, out_img])
-#
-#
-# # Question 3
 #
 # # Image paths
 # photo_path_1 = "Images/Section2.2 - Q2/7.1.01.tiff"
 # photo_path_2 = "Images/Section2.2 - Q2/7.2.01.tiff"
 #
+# # Define parameters
+# r1 = 70
+# s1 = 0
+# r2 = 140
+# s2 = 225
+#
+# img = cv2.imread(photo_path_2, 0)
+#
+# out_img = fl.contrast_piecewise(img, r1, s1, r2, s2)
+#
+# fl.display_multiple_images([img, out_img])
+#
+# # Question 3
+#
+# # Image paths
+# photo_path_1 = "Images/Section2.2 - Q3/3096.jpg"
+# photo_path_2 = "Images/Section2.2 - Q3/208001.jpg"
+#
 # # define parameters
 # a = 70
 # b = 150
 #
-# img = cv2.imread(photo_path_1, 0)
+# img = cv2.imread(photo_path_2, 0)
 #
 # out_img = fl.contrast_highlight(img, a, b)
 #
 # fl.display_multiple_images([img, out_img])
 #
+#
 # # Question 4
+#
+# photo_path_1 = "Images/Section2.2 - Q3/3096.jpg"
+# photo_path_2 = "Images/Section2.2 - Q2/208001.jpg"
 #
 # L = 256
 # img = cv2.imread(photo_path_1, 0)
 #
-# #Transfer Function
+# # Transfer Function
 # t = np.arange(0, L-1)
 #
 # c = 20
@@ -140,8 +136,6 @@ import lab1_functions as fl
 #
 # fl.display_multiple_images([img, out_img])
 #
-# fl.display_histogram(img)
-# fl.display_histogram(out_img)
 #
 # # Question 5
 #
@@ -156,14 +150,14 @@ import lab1_functions as fl
 # out_img = fl.contrast_streching_LUT(img)
 #
 # fl.display_multiple_images([img, out_img])
-
+#
 # # Question 6
 #
 # # Contrast Piecewise
 #
 # # Image paths
 # photo_path_1 = "Images/Section2.2 - Q2/7.1.01.tiff"
-# photo_path_2 = "Images/Section2.2 - Q2/7.1.02.tiff"
+# photo_path_2 = "Images/Section2.2 - Q2/7.2.01.tiff"
 #
 # # Define parameters
 # r1 = 70
@@ -171,13 +165,12 @@ import lab1_functions as fl
 # r2 = 140
 # s2 = 255
 #
-# img = cv2.imread(photo_path_1, 0)
+# img = cv2.imread(photo_path_2, 0)
 #
 # out_img = fl.contrast_piecewise_LUT(img, r1, s1, r2, s2)
 #
 # fl.display_multiple_images([img, out_img])
-
-
+#
 # # Contrast highlight
 #
 # # Image path
@@ -186,8 +179,8 @@ import lab1_functions as fl
 #
 # # Defining parameters
 # img = cv2.imread(photo_path_2, 0)
-# a = 130
-# b = 255
+# a = 70
+# b = 150
 #
 # out_img = fl.contrast_highlight_LUT(img, a, b)
 #

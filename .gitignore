@@ -5,7 +5,8 @@ Tutorial/
 __pycache__/
 venv/
 Images/
-
+.idea/
+LatexImg/
 
 #Files extension to ignore
 
@@ -18,4 +19,5 @@ Images/
 *.wav
 *.xml
 *.iml
-
+*.gz
+*.log
