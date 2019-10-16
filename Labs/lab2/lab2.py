@@ -16,13 +16,9 @@ img1 = cv2.imread(r"Images\nms-test.png", 0)
 img2 = cv2.imread(r"Images\threshold-test.png", 0)
 img3 = cv2.imread(r"Images\Lena-gray.tif", 0)
 
-img1_double = np.array(img1, np.double)
-img2_double = np.array(img2, np.double)
-img3_double = np.array(img3, np.double)
+# Section 2.1 - Filtering Functions
 
-# section 2.1.1
-
-# Question 5
+# Question 4
 
 # Spatial Filter Test
 
@@ -38,18 +34,32 @@ g_sum = np.sum(g_kernel)
 
 g_kernel = g_kernel / g_sum
 
-out_img = np.array(fun.spatial_filter(img3_double, g_kernel), np.uint8)
+out_img = fun.spatial_filter(img3, g_kernel)
 
+#display
 #bf.display_multiple_images([img3, out_img])
 
 # NMS filter Test
 
-nms_out_img_h, nms_out_img_v = np.array(fun.non_max_suppress(img1_double, 5, 5), np.uint8)
+nms_out_img_h, nms_out_img_v = fun.non_max_suppress(img1, 5, 5)
 
-nms_out_img = np.zeros_like(nms_out_img_h)
-for i in range(0,len(nms_out_img_h)):
-    for j in range(0,len(nms_out_img_h[i])):
-        if nms_out_img_h[i][j] == nms_out_img_v[i][j]:
-            nms_out_img[i][j] = nms_out_img_h[i][j]
+#nms_out_img = np.zeros_like(nms_out_img_h)
+#for i in range(0,len(nms_out_img_h)):
+#    for j in range(0,len(nms_out_img_h[i])):
+#        if nms_out_img_h[i][j] == nms_out_img_v[i][j]:
+#            nms_out_img[i][j] = nms_out_img_h[i][j]
+
+#sisplay
+#bf.display_multiple_images([img1, nms_out_img_h, nms_out_img_v, nms_out_img])
 
 # Threshold Filter Test
+
+# Set thresholding value
+T = 0.25         
+
+thresh_out_img = fun.image_thresholding(img2, T)
+
+#display
+#bf.display_multiple_images([img2, thresh_out_img])
+
+# Section 2.2 - Edge Detector

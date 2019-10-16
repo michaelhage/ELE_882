@@ -18,6 +18,8 @@ def spatial_filter(F, W):
     a,b = W.shape
     m,n = F.shape
     
+    F_double = np.array(F.copy(), np.uint8)
+    
 #    if filter kernel has size 1 by 1
     if a == 1 & b == 1:
         
@@ -33,8 +35,8 @@ def spatial_filter(F, W):
 #    creating a padded array and an output for the convolution operation 
     F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
     F_temp[row_top:m+row_top, col_left:n+col_left] = 1.0
-    F_temp[row_top:m+row_top, col_left:n+col_left] *= F
-    I = np.zeros_like(F)
+    F_temp[row_top:m+row_top, col_left:n+col_left] *= F_double
+    I = np.zeros_like(F_double)
     
 #    iterating over the length and width of the original size of the array
     for i in range(row_top,m+row_top):
@@ -49,7 +51,7 @@ def spatial_filter(F, W):
                     sum += snap[l][k] * W[l][k]
             I[i-row_top][j-col_left] = sum
             
-    return I
+    return np.array(I, np.uint8)
 
 def non_max_suppress(img, H, W):
     
@@ -79,9 +81,6 @@ def non_max_suppress(img, H, W):
             snap = F_temp[i-row_top: i+row_bottom+1, j].copy()
             if snap[row_top] == np.amax(snap):
                 I_horizontal[i-row_top,j-col_left] = snap[row_top]
-#                print( (i-row_top, j-col_left))
-#                print(snap[row_top])
-#                print(np.amax(snap))
                 
             else:
                 I_horizontal[i-row_top,j-col_left] = 0
@@ -96,19 +95,76 @@ def non_max_suppress(img, H, W):
             else:
                 I_vertical[i-row_top,j-col_left] = 0
             
-    return I_horizontal, I_vertical
+    return np.array(I_horizontal, np.uint8), np.array(I_vertical, np.uint8)
             
 
 def image_thresholding(img, T):
     
-    if 0 > T or T > 255:
+    if 0 > T or T > 1:
         return 0
+    
+    # if there is some way to dynamically do this i would
+    T *= 225 
     
     B = np.zeros_like(img)
     
     for i in range(0,len(img)):
         for j in range(0,len(img[i])):
             
-            if img[i,j] > T:
-                B[i,j] = 1
+            if img[i,j] >= T:
+                B[i,j] = 225
     return B
+
+
+def derivative_kernel(img, select):
+    
+    """Function that provides 4 derivative approximation kernels that can be 
+    individually selected to be convoluted over the image. Then, the 
+    convoluted image will be returned.
+    
+    Parameters
+    img (array, type = uint8): Image matrix that will be convoluted over
+    
+    select (int): Selects the operation to be used. Integer values between 0-3
+    will select. Values not within that range will return null.
+    
+    select values
+    [0] Central Difference: h = [1, 0, -1]
+    
+    [1] Forward Difference: h = [0, 1, -1]
+    
+    [2] Prewitt           : h = [[1, 0, -1]
+                                 [1, 0, -1]
+                                 [1, 0, -1]]
+    
+    [3] Prewitt           : h = [[1, 0, -1]
+                                 [2, 0, -2]
+                                 [1, 0, -1]]
+    """
+    
+#    checks for boundary conditions
+    select = int(select)
+    if  select > 3 or select < 0:
+        return img
+    
+#    selects operation
+    if select == 0:
+        h = [1, 0, -1]
+    
+    elif select == 1:
+        h = [0, 1, -1]
+    
+    elif select == 2:
+        h = [[1, 0, -1]
+             [1, 0, -1]
+             [1, 0, -1]]
+    else:
+        h = [[1, 0, -1]
+             [2, 0, -2]
+             [1, 0, -1]]
+        
+#    uses the spatial_filter function to implement the operations
+    return spatial_filter(img, h)
+    
+    
+    
