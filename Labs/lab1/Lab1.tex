@@ -1,0 +1,401 @@
+% !TeX spellcheck = en_US
+\documentclass{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+
+\graphicspath{{./LatexImg/}}
+
+\begin{document}
+	
+	\includepdf{CoverPage.pdf}
+	
+	\section{Introduction}
+	
+	This lab studies a gray-scale image and the transformations that can be applied to it to perform simple enhancements to the image. A gray-scale image $I(x,y)$ is stored in an array of numbers of length $H \times W$ that represent the intensity of each individual pixel. These values range from 0-255, signifying whether the pixel is dark, closer to the value 0, darker, closer to 255, or somewhere in between, thus being gray. Manipulating these values is the primary focus of this lab and the basis of enhancement of an image. \\
+	
+	Enhancement of some images require that either a section or the overall intensities of the image are changed in some ways. The average of all pixel intensities is known as the brightness of an image. Contrast is the spread of values in an image. A low-contrast image will have values very close together while a high-contrast image will have values that are very far apart. \newline
+	
+	The programming language used to conduct this lab is Python 3.7, and the libraries primarily used are opencv, numpy, matplotlib and copy.
+	
+	\section{Assignment}
+	
+	\subsection{Point Operation}
+	
+	Point operations deal with the individual manipulation of pixel intensities within the image. An example of a point operation would be \newline
+	
+	\begin{equation}
+	I_{p}(x,y) = CI(x,y) + B 
+	\end{equation} \\
+	
+	This particular transformation would scale the intensities of each pixel ($I(x,y)$) within a range, by a factor of $C$ and then offsets the value by a value $B$. \newline
+	
+	It is important to note that the intensity value of an image cannot exceed the boundaries of 0 or 255. If an overflow occurs then the resultant value that will be stored is the remainder of the result divided by 256.
+	
+	\subsubsection{Problem 1}
+	
+	This problem is the implementation of the formula portrayed in equation 1. The value of $C$ can be any real value, and the value of $B$ must be within the range of 0-255. The following equation was implemented using the following code: \newline
+	
+	\noindent def apply\textunderscore point\textunderscore tfrm(in\textunderscore img, c, b): \newline
+	\indent \# this copies the image independent of the original image \newline
+	\indent	out\textunderscore img = copy.copy(in\textunderscore img)\newline
+	\newline
+	\indent	\# iterates through the image \newline
+	\indent	for i in range(len(in\textunderscore img)):\newline
+	\indent \indent	for j in range(len(in\textunderscore img[i])):\newline
+	\newline
+	\indent \indent \indent		\# applies the transform to a value \newline
+	\indent \indent \indent		x = (c * in\textunderscore img[i][j]) + b \newline
+	\newline
+	\indent \indent \indent		\# checks for overflow \newline
+	\indent \indent \indent		if x $ > $ 255: \newline
+	\indent \indent \indent \indent	x = 255 \newline
+	\indent \indent \indent 	elif x $ < $ 0: \newline
+	\indent \indent \indent \indent	x = 0 \newline
+	
+	\indent \indent \indent		\# applies the value to the image pixel \newline
+	\indent \indent \indent		out\textunderscore img[i][j] = x \newline
+	\newline
+	\indent	return out\textunderscore img \newline
+	
+	When the following transform is applied to an image they produce the following results: \newline
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{s211i}\\
+		Image 1: Input Image\\
+		
+		\includegraphics[scale=0.75]{s211o}\\
+		Image 2: Output Image\\
+	\end{center}
+	
+	\subsubsection{Problem 2}
+	
+	This transformation is a type of masking transformation that combines the two images, $ I_{A}(x,y), I_{B}(x,y)$, by comparing the values of a third mask image, $ M(x,y) $. This particular one uses a mask image to decide which image pixel to append to the output image. It does so through the following equation: \newline
+	
+	
+	\begin{equation}
+	I_{p}(x,y) = \begin{cases} 
+	I_{A}(x,y), & M(x,y) > 0\\
+	I_{B}(x,y), & M(x,y) = 0
+	\end{cases} 
+	\end{equation}
+	\\
+	
+	\noindent The function is implemented using the following code: \newline
+	
+	\noindent def apply\textunderscore mask(img\textunderscore a, img\textunderscore b, img\textunderscore mask): \newline
+	\newline
+	\indent \# copies the first image \newline
+	\indent \indent out\textunderscore img = copy.copy(img\textunderscore a) \newline
+	
+	\indent \# iterates through the image \newline
+	\indent for i in range(len(img\textunderscore a)): \newline
+	\indent \indent for j in range(len(img\textunderscore a[i])): \newline
+	\newline
+	\indent \indent \indent\# if mask image pixel is black, then replace pixel with the second image \newline
+	\indent \indent \indent if img\textunderscore mask[i][j] == 0: \newline
+	\newline
+	\indent \indent \indent \indent out\textunderscore img[i][j] = img\textunderscore b[i][j] \newline
+	\newline
+	\indent return out\textunderscore img \newline
+	
+	When the transformation is applied to the following two images, with the mask image, the resultant image is: \newline
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{s212i1}\\
+		Image 3: Image A\\
+		\includegraphics[scale=0.75]{s212i2}\\
+		Image 4: Image B\\
+		\includegraphics[scale=0.75]{s212im}\\
+		Image 5: Mask Image\\
+		\includegraphics[scale=0.75]{s212o}\\
+		Image 6: Output Image\\
+	\end{center}
+	
+	\subsubsection{Problem 3}
+	
+	This function takes in N images and takes the average pixel intensities of each index for every image and merges them together in the end. This particular function assumes that the size of all the images are the same. The equation of this function is represented below: \newline
+	
+	\begin{equation}
+	I_{p}(x,y) = \frac{1}{N} \sum_{i=1}^{N} I_{i}(x,y) 
+	\end{equation} \\
+	
+	An issue with implementing the code would be using an image array to add the numbers, however this approach is susceptible to bit overflow, when adding too many numbers. The approach used by the code below uses a 64-bit unsigned array to average the numbers, then converts it to an 8-bit array that can be processed like an image. \\
+	
+	\noindent def average\textunderscore img(img\textunderscore arr):\newline
+	\newline
+	\indent \# defining length of the output image\newline
+	\indent out\textunderscore img = np.zeros((len(img\textunderscore arr[0]), len(img\textunderscore arr[0][0])))\newline
+	\newline
+	\indent \# iterate through the array\newline
+	\indent for i in range(len(img\textunderscore arr)):\newline
+	\newline
+	\indent \indent \# copies the image to a temp value\newline
+	\indent \indent temp\textunderscore img = copy.copy(img\textunderscore arr[i])\newline
+	\indent \indent for x in range(len(temp\textunderscore img)):\newline
+	\newline
+	\indent \indent \indent for y in range(len(temp\textunderscore img[x])):\newline
+	\newline
+	\indent \indent \indent \indent \# adds the pixel values to the output array\newline
+	\indent \indent \indent \indent out\textunderscore img[x][y] += temp\textunderscore img[x][y]\newline
+	\newline
+	\indent \# takes the average value of the array\newline
+	\indent out\textunderscore img = out\textunderscore img / len(img\textunderscore arr)\newline
+	\newline
+	\indent return out\textunderscore img\newline
+	
+	The code above produces the following results: \\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.5]{s213i}\\
+		Image 7: Input Image(1 of 4)\\
+		\includegraphics[scale=0.5]{s213o}\\
+		Image 8: Output Image\\
+		
+	\end{center}
+	
+	\subsection{Contrast Stretching}
+	
+	Contrast stretching is a simple image enhancement that improves the overall contrast of the image pixel values by stretching them across the intensity value range. A simple method of achieving this effect is to apply a transfer function $ T(r) $ to every pixel in an image, $ I(x,y) $. \\
+	
+	\begin{equation}
+	I_{cs}(x,y) = T(I(x,y))
+	\end{equation} \\
+	
+	\subsubsection{Problem 1}
+	
+	The following transfer function takes in an image and along with the max and min intensities, spreads the intensity values across the range. \\
+	
+	\begin{equation}
+	T(r) = 225( \frac{r - r_{min}}{r_{max - r_{min}}} )
+	\end{equation} \\
+	
+	The code to implement it: \\
+	
+	\noindent def contrast\textunderscore stretching(img):\\
+	\\
+	\indent out\textunderscore img = copy.copy(img)\\
+	\\
+	\indent \# get min and max intensity values\\
+	\indent r\textunderscore min = np.min(img)\\
+	\indent r\textunderscore max = np.max(img)\\
+	\\
+	\indent for i in range(len(img)):\\
+	\\
+	\indent \indent for j in range(len(img[i])):\\
+	\\
+	\indent \indent \indent \# apply the transform to each pixel \\
+	\indent \indent \indent out\textunderscore img[i][j] = 255 * (img[i][j] - r\textunderscore min) / (r\textunderscore max - r\textunderscore min)\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The image transformation yields the following results: \\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{s221i}\\
+		Image 9: Input Image\\
+		\includegraphics[scale=0.75]{s221o}\\
+		Image 10: Output Image\\
+	\end{center}
+	
+	\subsubsection{Problem 2}
+	
+	This problem implements a contrast piecewise linear function that takes 2 vector inputs to produce an output image. This amplifies the values within a certain range, $ r_{1} $ to $ r_{2}$, by a scaling factor of $ s_{1}$ to $ s_{2} $.\\
+	
+	The function is implemented in the following code:\\
+	
+	\noindent def contrast\textunderscore piecewise(img, r1, s1, r2, s2): \\
+	\\
+	\indent out\textunderscore img = copy.copy(img)\\
+	\\
+	\indent for i in range(len(img)):\\
+	\indent \indent for j in range(len(img[i])):\\
+	\\
+	\indent \indent \indent \# case statements for the piecewise function\\
+	\indent \indent \indent if 0 $ <= $ img[i][j] $ <= $ r1:\\
+	\indent \indent \indent \indent out\textunderscore img[i][j] = int( (s1 / r1) * img[i][j] )\\
+	\\
+	\indent \indent \indent elif r1 $ <= $ img[i][j] $ <= $ r2:\\
+	\indent \indent \indent \indent out\textunderscore img[i][j] = int(((s2 - s1) / (r2 - r1)) * (img[i][j] - r1) + s1)\\
+	\\
+	\indent \indent \indent else:\\
+	\indent \indent \indent \indent out\textunderscore img[i][j] = int(((255 - s2) / (255 - r2)) * (img[i][j] - r2) + s2)\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The following image outputs are displayed here for the values, $ r_{1} = 70 $, $ r_{2} = 140$, $ s_{1} = 0$, $ s_{2} = 225$.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.25]{s222i}\\
+		Image 11: Input Image\\
+		\includegraphics[scale=0.25]{s222o}\\
+		Image 12: Output Image\\
+	\end{center}
+	
+	
+	\subsubsection{Problem 3}
+	
+	Contrast highlighting is used to show certain pixels within a range while converting all other pixels to a very low or very high intensity. This is used to extract certain features of a photo that have similar intensity values. The following equation represents the property:\\
+	
+	\begin{equation}
+	T(r) = \begin{cases} 
+	I_{min}, & r < A\\
+	r, & A \leq r \leq B\\
+	I_{min}, & r > B
+	\end{cases} 
+	\end{equation}\\
+	
+	The code implementation is shown below:\\
+	
+	\noindent def contrast\textunderscore highlight(img, a, b):\\
+	\indent out\textunderscore img = copy.copy(img)\\
+	\\
+	\indent \# defining parameters \\
+	\indent l = 256 \\
+	\indent i\textunderscore min = 254\\
+	\\
+	\indent if (a+b)/2 $ >= $ (l/2):\\
+	\indent \indent i\textunderscore min = 1\\
+	\\
+	\indent for i in range(len(img)):\\
+	\indent \indent for j in range(len(img[i])):\\
+	\\
+	\indent \indent \indent \# checks for outside the requirement to replace with the extreme value\\
+	\indent \indent \indent if a \textgreater img[i][j] or img[i][j] \textgreater b:\\
+	\indent \indent \indent \indent out\textunderscore img[i][j] = i\textunderscore min\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The image transformation yields the following results: \\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.5]{s223i}\\
+		Image 13: Input Image\\
+		\includegraphics[scale=0.5]{s223o}\\
+		Image 14: Output Image\\
+	\end{center}
+	
+	\subsubsection{Problem 4}
+	
+	This problem uses Look Up Tables (LUTs) to create the transformations by exploiting the range of values of $ r $ can only be between $ 0 \leq r \leq 255 $. The code below maps an image to the transfer function represented by an LUT in an array. \\
+	
+	\noindent def contrast\textunderscore tfrm\textunderscore curve(img, t):\\
+	\indent out\textunderscore img = copy.copy(img)\\
+	\\
+	\indent for i in range(len(img)):\\
+	\indent \indent for j in range(len(img[i])):\\
+	\indent \indent \indent out\textunderscore img[i][j] = t[img[i][j]]\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	\subsubsection{Problem 5}
+	
+	This section deals with implementing the function in problem 1, equation 5, as an LUT using the previous code in the preceding problem. The code for this problem is found below: \\
+	
+	\noindent def contrast\textunderscore streching\textunderscore LUT(img):\\
+	\\
+	\indent \# defining parameters\\
+	\indent l = 256\\
+	\indent t = np.arange(0, l)\\
+	\\
+	\indent \# finding min and max values\\
+	\indent r\textunderscore min = np.min(img)\\
+	\indent r\textunderscore max = np.max(img)\\
+	\\
+	\indent \# creating the LUT for the function\\
+	\indent for i in range(len(t)):\\
+	\indent \indent t[i] = 255 * (t[i] - r\textunderscore min) / (r\textunderscore max - r\textunderscore min)\\
+	\\
+	\indent return contrast\textunderscore tfrm\textunderscore curve(img, t)\\
+	
+	The following results should be identical to those found in previous problem involving this function:\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{s225i}\\
+		Image 15: Input Image\\
+		\includegraphics[scale=0.75]{s225o}\\
+		Image 16: Output Image\\
+	\end{center}
+	
+	\subsubsection{Problem 6}
+	
+	This section is similar to the previous one, but now the other two functions will be implemented.\\
+	
+	The code for the contrast highlighting problem, problem 2:\\
+	
+	\noindent def contrast\textunderscore highlight\textunderscore LUT(img, a, b):\\
+	\indent \# defining parameters\\
+	\indent l = 256\\
+	\indent i\textunderscore min = 254\\
+	\\
+	\indent if (a + b) / 2 $ > = $ (l / 2):\\
+	\indent \indent i\textunderscore min = 1\\
+	\\
+	\indent \# create array for LUT\\
+	\indent t = np.arange(0, l)\\
+	\\
+	\indent \# apply transformation to LUT\\
+	\indent for i in range(len(t)):\\
+	\indent \indent if a $ > $ t[i] or t[i] $ > $ b:\\
+	\indent \indent \indent t[i] = i\textunderscore min\\
+	\\
+	\indent return contrast\textunderscore tfrm\textunderscore curve(img, t)\\
+	
+	The output image using the transformation yields the following results:\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.25]{s226i1}\\
+		Image 17: Input Image\\
+		\includegraphics[scale=0.25]{s226o1}\\
+		Image 18: Output Image\\
+	\end{center}
+	
+	The code for the contrast stretching problem, problem 3:\\
+	
+	\noindent def contrast\textunderscore piecewise\textunderscore LUT(img, r1, s1, r2, s2):\\
+	\indent l = 256\\
+	\indent t = np.arange(0, l)\\
+	\\
+	\indent for i in range(len(t)):\\
+	\indent \indent if 0 <= t[i] <= r1:\\
+	\indent \indent \indent t[i] = int((s1 / r1) * t[i])\\
+	\\
+	\indent \indent elif r1 < t[i] <= r2:\\
+	\indent \indent \indent t[i] = int(((s2 - s1) / (r2 - r1)) * (t[i] - r1) + s1)\\
+	\\
+	\indent \indent else:\\
+	\indent \indent \indent t[i] = int(((255 - s2) / (255 - r2)) * (t[i] - r2) + s2)\\
+	\\
+	\indent return contrast\textunderscore tfrm\textunderscore curve(img, t)\\
+	
+	The output images:\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{s226i2}\\
+		Image 19: Input Image\\
+		\includegraphics[scale=0.75]{s226o2}\\
+		Image 20: Output Image\\
+	\end{center}
+	
+	\subsection{Analysis}
+	
+	\begin{enumerate}
+		\item Alpha blending is a similar concept to binary masking, as it combines two images together. Unlike binary masking, alpha blending can use a mix of both images to produce some transparency with an object. This is achieved by using an image mask where each pixel value indicates the percentage of both images with one number. This can be done using the formula below: 
+		
+		\begin{equation}
+		I_{p}(x,y) = \alpha * I_{a}(x,y) + (1 - \alpha) * I_{B}{x,y},
+		\end{equation}
+		
+		where $ I_{p}(x,y) $ is the output image, $ \alpha  $ is the pixel mask value, can be between 0 and 1, $ I_{A}(x,y) $ and $ I_{B}(x,y) $ are the input images.
+		
+		\item The function mentioned in Problem 1 of section 2.2, stretches the intensity values across the whole range of intensity values for an 8-bit grayscale image.
+		
+		\item A potential benefit of a look up table for this problem is that the lookup table only has 256 entries as opposed to the image, so the operation doesn't have to be done more than once for each intensity value. A downside is that it could take longer for images being less efficient.
+		
+		\item Contrast stretching can be used in this scenario, as the camera can output to the RAW file and the algorithm can use the min and max values to produce a ratio and multiply it by the max intensity value for an 8-bit grayscale image, like in the code above for equation 5. Some consideration for this method is that the image will likely lose some details due to the reduction in bits used by the transformation.
+		
+		\item It will not produce a high contrast, nor will it produce a high quality image because the image details would be lost when stretching it across the range. Sensor noise would be more apparent due to the effect being amplified by attempting to make every pixel brighter.
+	\end{enumerate}
+	
+\end{document} 
