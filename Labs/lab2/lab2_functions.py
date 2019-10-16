@@ -29,22 +29,6 @@ def spatial_filter(F, W):
     
     col_right, col_left = padding_param(b)
     row_bottom, row_top = padding_param(a)
-#    if b % 2 == 1:
-#        col_right = int((b-1)/2)
-#        col_left = int(col_right)
-#    
-#    else:
-#        col_left = int(b/2)
-#        col_left = int(col_right - 1)
-    
-#    same process as above, but for the rows instead
-#    if a % 2 == 1:
-#        row_bottom = int((a - 1)/ 2)
-#        row_top = int(row_bottom)
-#    
-#    else:
-#        row_bottom = int(a / 2)
-#        row_top = int(row_bottom - 1)
     
 #    creating a padded array and an output for the convolution operation 
     F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
@@ -74,11 +58,9 @@ def non_max_suppress(img, H, W):
     if H == 1 & W == 1:
         return img
     
-#    establishing the padding parameters for the padded array
-        
+#    establishing the padding parameters for the padded array       
     col_right, col_left = padding_param(W)
     row_bottom, row_top = padding_param(H)
-    
         
     # creating a padded array and an output for the max operation
     F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
@@ -87,7 +69,6 @@ def non_max_suppress(img, H, W):
     I_vertical = np.zeros_like(img)
     I_horizontal = np.zeros_like(img)
     
-    print(row_top)
 #    iterating over the original array while applying a horizontal kernel
 #    with a max value filter
     for i in range(row_top,m+row_top):
