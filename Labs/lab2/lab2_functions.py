@@ -87,6 +87,7 @@ def non_max_suppress(img, H, W):
     I_vertical = np.zeros_like(img)
     I_horizontal = np.zeros_like(img)
     
+    print(row_top)
 #    iterating over the original array while applying a horizontal kernel
 #    with a max value filter
     for i in range(row_top,m+row_top):
@@ -95,14 +96,24 @@ def non_max_suppress(img, H, W):
 #            partitioning the array and computing the max value and storing
 #            it in the output array
             snap = F_temp[i-row_top: i+row_bottom+1, j].copy()
-            I_horizontal[i-row_top,j-col_left] = np.amax(snap)
+            if snap[row_top] == np.amax(snap):
+                I_horizontal[i-row_top,j-col_left] = snap[row_top]
+#                print( (i-row_top, j-col_left))
+#                print(snap[row_top])
+#                print(np.amax(snap))
+                
+            else:
+                I_horizontal[i-row_top,j-col_left] = 0
             
 #    same operation as above except with a vertical kernel
     for i in range(row_top,m+row_top):
         for j in range(col_left,n+col_left):
             
             snap = F_temp[i, j-col_left: j+col_right+1].copy()
-            I_vertical[i-row_top,j-col_left] = np.amax(snap)
+            if snap[col_left] == np.amax(snap):
+                I_vertical[i-row_top,j-col_left] = snap[col_left]
+            else:
+                I_vertical[i-row_top,j-col_left] = 0
             
     return I_horizontal, I_vertical
             
