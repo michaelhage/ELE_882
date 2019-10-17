@@ -15,6 +15,7 @@ import cv2
 img1 = cv2.imread(r"Images\nms-test.png", 0)
 img2 = cv2.imread(r"Images\threshold-test.png", 0)
 img3 = cv2.imread(r"Images\Lena-gray.tif", 0)
+img4 = cv2.imread(r"Images\mandrill.tif", 0)
 
 # Section 2.1 - Filtering Functions
 
@@ -24,11 +25,11 @@ img3 = cv2.imread(r"Images\Lena-gray.tif", 0)
 
 # create gaussian kernel, 5x5
 
-g_kernel = [[1, 4, 7, 4, 1],
+g_kernel = np.array([[1, 4, 7, 4, 1],
             [4, 20, 33, 20, 4],
             [7, 33, 55, 33, 7],
             [4, 20, 33, 20, 4],
-            [1, 4, 7, 4, 1]]
+            [1, 4, 7, 4, 1]])
 
 g_sum = np.sum(g_kernel)
 
@@ -41,11 +42,11 @@ out_img = fun.spatial_filter(img3, g_kernel)
 
 # NMS filter Test
 
-nms_out_img = fun.non_max_suppress(img1, 5, 5)
+nms_out_img = fun.non_max_suppress_full(img1, 5, 5)
 
 
 #display
-#bf.display_multiple_images([img1, nms_out_img_h, nms_out_img_v, nms_out_img])
+#bf.display_multiple_images([img1, nms_out_img])
 
 # Threshold Filter Test
 
@@ -58,3 +59,7 @@ thresh_out_img = fun.image_thresholding(img2, T)
 #bf.display_multiple_images([img2, thresh_out_img])
 
 # Section 2.2 - Edge Detector
+
+H = np.array([[1, 0, -1],
+              [2, 0, -2],
+              [1, 0, -1]])
