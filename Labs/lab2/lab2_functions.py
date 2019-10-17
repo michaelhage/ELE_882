@@ -95,7 +95,7 @@ def non_max_suppress(img, H, W):
             else:
                 I_vertical[i-row_top,j-col_left] = 0
             
-    return np.array(I_horizontal, np.uint8), np.array(I_vertical, np.uint8)
+    return np.array(I_horizontal, np.uint8) + np.array(I_vertical, np.uint8)
             
 
 def image_thresholding(img, T):

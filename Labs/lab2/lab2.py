@@ -41,15 +41,10 @@ out_img = fun.spatial_filter(img3, g_kernel)
 
 # NMS filter Test
 
-nms_out_img_h, nms_out_img_v = fun.non_max_suppress(img1, 5, 5)
+nms_out_img = fun.non_max_suppress(img1, 5, 5)
 
-#nms_out_img = np.zeros_like(nms_out_img_h)
-#for i in range(0,len(nms_out_img_h)):
-#    for j in range(0,len(nms_out_img_h[i])):
-#        if nms_out_img_h[i][j] == nms_out_img_v[i][j]:
-#            nms_out_img[i][j] = nms_out_img_h[i][j]
 
-#sisplay
+#display
 #bf.display_multiple_images([img1, nms_out_img_h, nms_out_img_v, nms_out_img])
 
 # Threshold Filter Test
