@@ -31,7 +31,7 @@ g_sum = np.sum(g_kernel)
 
 g_kernel = g_kernel / g_sum
 
-out_img = fun.spatial_filter(img3, g_kernel)
+out_img = np.array(fun.spatial_filter(img3, g_kernel), np.uint8)
 
 #display
 bf.display_multiple_images([img3, out_img])
@@ -62,9 +62,11 @@ bf.display_multiple_images([img2, thresh_out_img])
 
 # Section 2.2 - Edge Detector
 
+#help(fun.edge_detector)
+
 #defining parameters
-threshold = 0.1 
-size = 5
+threshold = 0.3
+size = 7
 H = np.array([[1, 0, -1],
               [2, 0, -2],
               [1, 0, -1]])
@@ -81,11 +83,13 @@ bf.display_multiple_images([img3, out_img_edge])
 
 #Section 2.3 - Derivative Filters
 
+
 #use the following command to see the help function
 #help(fun.derivative_kernel)
 
-#This variable will select the 
-sel = 1
+#This variable will select the kernel
+#The spatial filter doesn't work properly with the vector inputs
+sel = 2
 
 #calls the kernel selection function
 H = fun.derivative_kernel(sel)

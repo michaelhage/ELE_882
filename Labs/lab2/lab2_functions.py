@@ -14,7 +14,7 @@ def padding_param(a):
     return m,n
 
 
-def spatial_filter(F, W):
+def spatial_filter(F, W): 
     
     a,b = W.shape
     m,n = F.shape
@@ -22,7 +22,7 @@ def spatial_filter(F, W):
     F_double = np.array(F.copy(), np.double)
     
 #    if filter kernel has size 1 by 1
-    if a == 1 & b == 1:
+    if a == 1 and b == 1:
         
         I = W*F
         return I
@@ -30,12 +30,13 @@ def spatial_filter(F, W):
 #    finding if column of kernel is odd or even and establishing the padding 
 #    parameters for the padded array
     
-    col_right, col_left = padding_param(b)
-    row_bottom, row_top = padding_param(a)
+    col_right, col_left = padding_param(a)
+    row_bottom, row_top = padding_param(b)
     
 #    creating a padded array and an output for the convolution operation 
-    F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
+    F_temp = np.zeros([m+row_top+row_bottom,n+col_left+col_right])
     F_temp[row_top:m+row_top, col_left:n+col_left] = 1.0
+    
     F_temp[row_top:m+row_top, col_left:n+col_left] *= F_double
     I = np.zeros_like(F_double)
     
@@ -47,10 +48,13 @@ def spatial_filter(F, W):
 #            partioning a section the same size as the kernel for the 
 #            convoltion operation and then computing the convolution and
 #            storing it in the output array
+            
             snap = F_temp[i-row_top: i+row_bottom+1, j-col_left: j+col_right+1].copy()
             for l in range(0,len(W)):
                 for k in range(0,len(W[l])):
-                    sum += snap[l][k] * W[l][k]
+                    
+                    sum += snap[l][k] * W[k][l]
+                    
             I[i-row_top][j-col_left] = sum
             
     return I
@@ -62,7 +66,7 @@ def non_max_suppress(img, H, W):
     
     m,n = img.shape
     
-    if H == 1 & W == 1:
+    if H == 1 and W == 1:
         return img
     
 #    establishing the padding parameters for the padded array       
@@ -70,7 +74,7 @@ def non_max_suppress(img, H, W):
     row_bottom, row_top = padding_param(H)
         
     # creating a padded array and an output for the max operation
-    F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
+    F_temp = np.zeros([m+row_top+row_bottom,n+col_left+col_right])
     F_temp[row_top:m+row_top, col_left:n+col_left] = 1.0
     F_temp[row_top:m+row_top, col_left:n+col_left] *= img
     I_vertical = np.zeros_like(img)
@@ -104,7 +108,7 @@ def non_max_suppress_full(img, H, W):
     
     m,n = img.shape
     
-    if H == 1 & W == 1:
+    if H == 1 and W == 1:
         return img
     
 #    establishing the padding parameters for the padded array       
@@ -112,7 +116,7 @@ def non_max_suppress_full(img, H, W):
     row_bottom, row_top = padding_param(H)
         
     # creating a padded array and an output for the max operation
-    F_temp = np.zeros([m+col_left+col_right,n+row_top+row_bottom])
+    F_temp = np.zeros([m+row_top+row_bottom,n+col_left+col_right])
     F_temp[row_top:m+row_top, col_left:n+col_left] = 1.0
     F_temp[row_top:m+row_top, col_left:n+col_left] *= img
     I = np.zeros_like(img)
@@ -176,35 +180,38 @@ def edge_detector(img, H, T=0.1, wndsz=5):
      else:
          I = img.copy()
      
-##     Gaussian Kernel to reduce noise
-#     g_kernel = np.array([[1, 4, 7, 4, 1],
-#            [4, 20, 33, 20, 4],
-#            [7, 33, 55, 33, 7],
-#            [4, 20, 33, 20, 4],
-#            [1, 4, 7, 4, 1]])
-#
-#     g_sum = np.sum(g_kernel)   
+#     Gaussian Kernel to reduce noise
+     g_kernel = np.array([[1, 4, 7, 4, 1],
+            [4, 20, 33, 20, 4],
+            [7, 33, 55, 33, 7],
+            [4, 20, 33, 20, 4],
+            [1, 4, 7, 4, 1]])
+
+     g_sum = np.sum(g_kernel)   
 
 #     Gets the transpose of the horizontal kernel to get the vertical kernel
      H_t = np.transpose(H)
      
 #     used to reduce noise in the image while preserving edges
-#     I = spatial_filter(I, g_kernel / g_sum)  
+     I = spatial_filter(I, g_kernel / g_sum)  
      
 #     Convolutes the derivative approximation kernels to find the image 
 #     gradients
-     I_x, I_y = spatial_filter(I, H), spatial_filter(I, H_t)
+     I_x = spatial_filter(I, H)
+     I_y = spatial_filter(I, H_t)
      
 #     Computes the gradient magnitude
      I = np.sqrt(I_x**2 + I_y**2)
-#     
+
+
+#    For Seperate NMS 
+     
 #     Suppressing low fluctuations in intensities
      I_x, I_y = non_max_suppress(I, wndsz, wndsz)
      
 #     Threshold all small values that indicate weak edges
-#     I = image_thresholding(np.array(I, np.uint8), T)
      I_x = image_thresholding(np.array(I_x, np.uint8), T)
-     I_y = image_thresholding(np.array(I_y, np.uint8), T)
+     I_y = image_thresholding(np.array(I_y, np.uint8), T)     
      
      max_value = np.iinfo(img.dtype).max
      
@@ -215,7 +222,11 @@ def edge_detector(img, H, T=0.1, wndsz=5):
                  I[i][j] = max_value
              else:
                  I[i][j] = 0
-#     
+ 
+##     For 2D NMS
+#     I = non_max_suppress_full(I, wndsz, wndsz)
+#     I = image_thresholding(np.array(I, np.uint8), T)
+     
      return I
      
 def derivative_kernel(select):
@@ -252,10 +263,10 @@ def derivative_kernel(select):
     
 #    selects operation
     if select == 0:
-        h = np.array([1, 0, -1])
+        h = np.array([[1, 0, -1]])
     
     elif select == 1:
-        h = np.array([0, 1, -1])
+        h = np.array([[0, 1, -1]])
     
     elif select == 2:
         h = np.array([[1, 0, -1],
