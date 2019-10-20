@@ -55,6 +55,7 @@ def spatial_filter(F, W):
             
     return I
 
+
 # This filter applies a Non-Maximum Suppression mask twice to the image, once in a vertical manner and
 # another in a horizontal direction.
 def non_max_suppress(img, H, W):
@@ -85,9 +86,6 @@ def non_max_suppress(img, H, W):
             snap = F_temp[i-row_top: i+row_bottom+1, j].copy()
             if snap[row_top] == np.amax(snap):
                 I_horizontal[i-row_top,j-col_left] = snap[row_top]
-                
-            else:
-                I_horizontal[i-row_top,j-col_left] = 0
             
 #    same operation as above except with a vertical kernel
     for i in range(row_top,m+row_top):
@@ -96,11 +94,9 @@ def non_max_suppress(img, H, W):
             snap = F_temp[i, j-col_left: j+col_right+1].copy()
             if snap[col_left] == np.amax(snap):
                 I_vertical[i-row_top,j-col_left] = snap[col_left]
-            else:
-                I_vertical[i-row_top,j-col_left] = 0
-        
             
     return I_horizontal, I_vertical
+
 
 # This filter applies a 2-D Non-Maximum Suppression mask throughout the 
 # whole image. 
@@ -180,20 +176,20 @@ def edge_detector(img, H, T=0.1, wndsz=5):
      else:
          I = img.copy()
      
-#     Gaussian Kernel to reduce noise
-     g_kernel = np.array([[1, 4, 7, 4, 1],
-            [4, 20, 33, 20, 4],
-            [7, 33, 55, 33, 7],
-            [4, 20, 33, 20, 4],
-            [1, 4, 7, 4, 1]])
-
-     g_sum = np.sum(g_kernel)   
+##     Gaussian Kernel to reduce noise
+#     g_kernel = np.array([[1, 4, 7, 4, 1],
+#            [4, 20, 33, 20, 4],
+#            [7, 33, 55, 33, 7],
+#            [4, 20, 33, 20, 4],
+#            [1, 4, 7, 4, 1]])
+#
+#     g_sum = np.sum(g_kernel)   
 
 #     Gets the transpose of the horizontal kernel to get the vertical kernel
      H_t = np.transpose(H)
      
 #     used to reduce noise in the image while preserving edges
-     I = spatial_filter(I, g_kernel / g_sum)  
+#     I = spatial_filter(I, g_kernel / g_sum)  
      
 #     Convolutes the derivative approximation kernels to find the image 
 #     gradients
@@ -201,26 +197,37 @@ def edge_detector(img, H, T=0.1, wndsz=5):
      
 #     Computes the gradient magnitude
      I = np.sqrt(I_x**2 + I_y**2)
-     
+#     
 #     Suppressing low fluctuations in intensities
-     I = non_max_suppress_full(I, wndsz, wndsz)
+     I_x, I_y = non_max_suppress(I, wndsz, wndsz)
      
 #     Threshold all small values that indicate weak edges
-     I = image_thresholding(np.array(I, np.uint8), T)
+#     I = image_thresholding(np.array(I, np.uint8), T)
+     I_x = image_thresholding(np.array(I_x, np.uint8), T)
+     I_y = image_thresholding(np.array(I_y, np.uint8), T)
      
+     max_value = np.iinfo(img.dtype).max
+     
+     for i in range(0,len(I_x)):
+         for j in range(0, len(I_x[i])):
+             
+             if I_x[i][j] == max_value or I_y[i][j] == max_value:
+                 I[i][j] = max_value
+             else:
+                 I[i][j] = 0
+#     
      return I
      
-def derivative_kernel(img, select):
+def derivative_kernel(select):
     
     """Function that provides 4 derivative approximation kernels that can be 
-    individually selected to be convoluted over the image. Then, the 
-    convoluted image will be returned.
+    individually selected to be returned.
     
     Input Parameters :
     img (array, type = uint8): Image matrix that will be convoluted over
     
     select (int): Selects the operation to be used. Integer values between 0-3
-    will select. Values not within that range will return the original image.
+    will select. Values not within that range will return a 0 value
     
     select values
     [0] Central Difference: h = [1, 0, -1]
@@ -241,26 +248,23 @@ def derivative_kernel(img, select):
 #    checks for boundary conditions
     select = int(select)
     if  select > 3 or select < 0:
-        return img
+        return 0
     
 #    selects operation
     if select == 0:
-        h = [1, 0, -1]
+        h = np.array([1, 0, -1])
     
     elif select == 1:
-        h = [0, 1, -1]
+        h = np.array([0, 1, -1])
     
     elif select == 2:
-        h = [[1, 0, -1],
-             [1, 0, -1],
-             [1, 0, -1]]
+        h = np.array([[1, 0, -1],
+                      [1, 0, -1],
+                      [1, 0, -1]])
     else:
-        h = [[1, 0, -1]
-             [2, 0, -2]
-             [1, 0, -1]]
-        
-#    uses the spatial_filter function to implement the operations
-    return spatial_filter(img, h)
+        h = np.array([[1, 0, -1],
+                      [2, 0, -2],
+                      [1, 0, -1]])
     
-    
-    
+    return h  
+  
