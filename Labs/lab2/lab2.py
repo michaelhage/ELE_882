@@ -65,8 +65,6 @@ bf.display_multiple_images([img2, thresh_out_img])
 #help(fun.edge_detector)
 
 #defining parameters
-threshold = 0.3
-size = 7
 H = np.array([[1, 0, -1],
               [2, 0, -2],
               [1, 0, -1]])
@@ -74,10 +72,18 @@ H = np.array([[1, 0, -1],
 #both perfom the same operation, but one of them uses the default parameters 
 #and the other can be adjusted
 
+#default parameters
 out_img_edge = fun.edge_detector(img3, H)
-#out_img_edge = fun.edge_detector(img3, H, T = threshold, wndsz = size)
 
 #display
+bf.display_multiple_images([img3, out_img_edge])
+
+#manual parameters
+threshold = 0.3
+size = 7
+
+out_img_edge = fun.edge_detector(img3, H, T = threshold, wndsz = size)
+
 bf.display_multiple_images([img3, out_img_edge])
 
 
@@ -99,4 +105,3 @@ out_img_edge = fun.edge_detector(img3, H)
 #display
 bf.display_multiple_images([img3, out_img_edge])
 
-#Section 2.4 - Automatic Thresholding
