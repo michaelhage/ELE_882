@@ -14,7 +14,7 @@ LatexImg/
 *.aux
 *.log
 *.jpg
-*.tiff
+*.tif
 *.png
 *.wav
 *.xml
