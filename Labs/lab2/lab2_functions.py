@@ -249,7 +249,7 @@ def derivative_kernel(select):
                                  [1, 0, -1],
                                  [1, 0, -1]]
     
-    [3] Prewitt           : h = [[1, 0, -1],
+    [3] Sobel             : h = [[1, 0, -1],
                                  [2, 0, -2],
                                  [1, 0, -1]]
     

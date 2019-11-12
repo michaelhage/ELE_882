@@ -115,12 +115,15 @@ def oilify(img, R, gamma):
                     acc += snap[x][y]
             
             h_max = np.amax(h)
-            A = 0; B = 0
+            A = 0 
+            B = 0            
             
-            for i in range(0, N+1):
-                w = (h[i] / h_max) ** gamma
+            for k in range(0, N+1):
+                w = (h[k] / h_max) ** gamma
                 B += w
-                A += w * (acc[i] / h[i])
+                if(h[k] != 0):
+                    A += w * (acc[k] / h[k])
             
-            print (A, B)
-            out[i][j] = int(A / B)
+            out[i-row_top][j-col_left] = int(A / B)
+            
+    return out
