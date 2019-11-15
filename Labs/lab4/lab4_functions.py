@@ -76,6 +76,7 @@ def soft_thereshold(img, cutoff, phi):
             
     return np.array( (out * 127) + 1, np.uint8)
 
+
 def three_tone(img, cutoff, phi, k, sigma, p):
     
     out = XDOG(img, k, sigma, p)
@@ -83,6 +84,7 @@ def three_tone(img, cutoff, phi, k, sigma, p):
     out = soft_thereshold(out, cutoff, phi)
     
     return out
+
 
 def oilify(img, R, gamma):
     
@@ -119,11 +121,63 @@ def oilify(img, R, gamma):
             B = 0            
             
             for k in range(0, N+1):
-                w = (h[k] / h_max) ** gamma
-                B += w
                 if(h[k] != 0):
+                    w = (h[k] / h_max) ** gamma
+                    B += w
                     A += w * (acc[k] / h[k])
             
-            out[i-row_top][j-col_left] = int(A / B)
+            out[i-row_top][j-col_left] = A / B
             
-    return out
+    return np.array(out, np.uint8)
+
+
+def edge_preserving(img, min_window_size, iteration):
+    
+    out_img = img.copy()
+    
+#    Check for RGB image, if so then convert to grayscale
+    if out_img.ndim == 3:
+        out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
+    
+    for i in range(0, iteration):
+        out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
+    
+    return out_img
+
+def extract_edges(img, threshold):
+    
+    out_img = np.zeros_like(img)
+    
+    gauss = gaussian_kernel(1, 2)
+    gauss_sum = np.sum(gauss)
+    
+    laplace = np.array([[-1, -1, -1],
+                        [-1, 8, -1],
+                        [-1, -1, -1]])
+    
+    img_temp = bf.spatial_filter(img, gauss / gauss_sum)
+    
+    img_temp = bf.spatial_filter(img_temp, laplace)
+    
+    
+    for i in range(1,len(img_temp)-1):
+        for j in range(1,len(img_temp[i])-1):
+            
+            if(np.absolute(img_temp[i][j]) > threshold):
+                
+                if(img_temp[i-1][j] < 0 and img_temp[i+1][j] > 0) or (img_temp[i-1][j] > 0 and img_temp[i+1][j] < 0):
+                    out_img[i][j] += 1
+                
+                if(img_temp[i][j-1] < 0 and img_temp[i][j+1] > 0) or (img_temp[i][j-1] > 0 and img_temp[i][j+1] < 0):
+                    out_img[i][j] += 1
+                
+                if(img_temp[i+1][j+1] < 0 and img_temp[i-1][j-1] > 0) or (img_temp[i+1][j+1] > 0 and img_temp[i-1][j-1] < 0):
+                    out_img[i][j] += 1
+                
+                if(img_temp[i-1][j+1] < 0 and img_temp[i+1][j-1] > 0) or (img_temp[i-1][j+1] > 0 and img_temp[i+1][j-1] < 0):
+                    out_img[i][j] += 1
+                
+                if(out_img[i][j] > 2):
+                    out_img[i][j] = 255
+    
+    return np.array(out_img, np.uint8)

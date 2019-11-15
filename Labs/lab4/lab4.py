@@ -58,8 +58,23 @@ bf.display_multiple_images([img1, out_img5])
 
 # Section 3.1.2
 
-R = 16
+R = 8
 gamma = 2
 
 out_img6 = fun.oilify(img1, R, gamma)
 bf.display_multiple_images([img1, out_img6])
+
+# Section 3.2
+
+# Problem 1
+
+min_window_size = 3
+iteration = 3
+
+out_img7 = fun.edge_preserving(img1, min_window_size, iteration)  
+bf.display_multiple_images([img1, out_img7])
+
+# Problem 2
+
+out_img8 = fun.extract_edges(img1)
+bf.display_multiple_images([img1, out_img8])
