@@ -64,13 +64,9 @@
 	
 	\section{Assignment}
 	
-	\subsection{Problems}
+	\subsection{XDOG}
 	
-	\subsubsection{XDOG}
-	
-	\smallskip
-	
-	\textbf{XDOG}
+	\subsubsection{XDOG Kernel}
 	
 	The eXtended Difference of Gaussians filter implementation follows the same guidelines as equation 1 and 2 and the descriptions above. The following filter is strictly a grayscale filter and any coloured images are converted at the beginning the code below.\\
 		
@@ -109,6 +105,8 @@
 		\includegraphics[scale=0.75]{s211o}\\
 		Image 2: Output Image\\
 	\end{center}
+
+	\subsubsection{Threshold}
 		
 	The hard and soft threshold functions found in equations 3 and 4 are implemented below. The images below differ from the equations described above as they are not binary images, but images that range across the unsigned 8-bit spectrum.\\
 		
@@ -165,10 +163,8 @@
 		\includegraphics[scale=0.75]{s212oy}\\
 		Image 5: Output Image, Vertical\\
 	\end{center}
-
-	\smallskip
 	
-	\textbf{Three-Tone Operator}\\
+	\subsection{Three-Tone Operator}
 	
 	For the three tone generator, the same method that was in the soft thresholding was applied to this operator. Instead of the hyperbolic tangent function being applied when the threshold wasn't exceeded, the function is applied globally. The code for the function is shown below:\\
 	
@@ -197,21 +193,40 @@
 		Image 5: Output Image, Vertical\\
 	\end{center}
 	
-	\subsubsection{Oilify Filter}
+	\subsection{Oilify Filter}
 	
 	Need to add.
 	
 	\subsection{Cartoon Effect}
 	
-	\smallskip
-	
-	\textbf{Edge Preserving, Smoothing Area Filter}
+	\subsubsection{Edge Preserving, Smoothing Area Filter}
 	
 	This filter was implemented to smooth out the image, to produce a cartoon blur effect while preserving the edges. This filter was achieved by using a median filter and expanding the dimensions of the kernel every iteration.\\
 	
+	\noindent def edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration):\\
+	\\
+	\indent out\textunderscore img = img.copy()\\
+	\\
+	\indent \#     Check for RGB image, if so then convert to grayscale\\
+	\indent if out\textunderscore img.ndim == 3:   \\      
+	\indent \indent out\textunderscore img = cv2.cvtColor(out\textunderscore img, cv2.COLOR\textunderscore BGR2GRAY)\\
+	\\
+	\indent for i in range(0, iteration):\\
+	\indent \indent out\textunderscore img = cv2.medianBlur(out\textunderscore img, min\textunderscore window\textunderscore size + 2 * i)\\
+	\\
+	\indent return out\textunderscore img\\
 	
+	The filter produced the following output with the input provided below:\\
 	
-	\subsection{Edge Detector}
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{lena}\\
+		Image 1: Input Image\\
+		
+		\includegraphics[scale=0.75]{s211o}\\
+		Image 2: Output Image\\
+	\end{center}
+	
+	\subsubsection{Edge Detector}
 	
 	The edge detector utilizes the functions described above to perform the pipeline outlined in the introduction to find the edges of any input images. The edge detector's inputs are an image array, a derivative kernel, an optional threshold value, and a window size for the NMS filter. \\
 	
@@ -385,5 +400,11 @@
 		The central and forward difference did not work in the spatial filter function, therefore there cannot be a comparison on the images. 
 		
 	\end{enumerate}
+	
+	\clearpage
+	
+	\section{References}
+	
+	[1] A. Jana, “Implement Canny edge detector using Python from scratch,” A Developer Diary, 20-May-2019. [Online]. Available: http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/. [Accessed: 18-Nov-2019].
 	
 \end{document}

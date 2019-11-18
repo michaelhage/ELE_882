@@ -8,6 +8,7 @@ Created on Wed Nov  6 09:47:14 2019
 import cv2
 import numpy as np
 import basic_functions as bf
+import time
 
 def gaussian_kernel(sigma, r):
     
@@ -142,9 +143,8 @@ def edge_preserving(img, min_window_size, iteration):
     if out_img.ndim == 3:         
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         
-    else:
-        for i in range(0, iteration):
-            out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
+    for i in range(0, iteration):
+        out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
     
     return out_img
 
@@ -173,8 +173,8 @@ def hysteresis(image):
  
     top_to_bottom = image.copy()
  
-    for row in range(1, image_row):
-        for col in range(1, image_col):
+    for row in range(1, image_row - 1):
+        for col in range(1, image_col - 1):
             if top_to_bottom[row, col] == weak:
                 if top_to_bottom[row, col + 1] == 255 or top_to_bottom[row, col - 1] == 255 or top_to_bottom[row - 1, col] == 255 or top_to_bottom[
                     row + 1, col] == 255 or top_to_bottom[
@@ -186,8 +186,8 @@ def hysteresis(image):
  
     bottom_to_top = image.copy()
  
-    for row in range(image_row - 1, 0, -1):
-        for col in range(image_col - 1, 0, -1):
+    for row in range(image_row - 2, 1, -1):
+        for col in range(image_col - 2, 1, -1):
             if bottom_to_top[row, col] == weak:
                 if bottom_to_top[row, col + 1] == 255 or bottom_to_top[row, col - 1] == 255 or bottom_to_top[row - 1, col] == 255 or bottom_to_top[
                     row + 1, col] == 255 or bottom_to_top[
@@ -199,8 +199,8 @@ def hysteresis(image):
  
     right_to_left = image.copy()
  
-    for row in range(1, image_row):
-        for col in range(image_col - 1, 0, -1):
+    for row in range(1, image_row - 1):
+        for col in range(image_col - 2, 0, -1):
             if right_to_left[row, col] == weak:
                 if right_to_left[row, col + 1] == 255 or right_to_left[row, col - 1] == 255 or right_to_left[row - 1, col] == 255 or right_to_left[
                     row + 1, col] == 255 or right_to_left[
@@ -212,8 +212,8 @@ def hysteresis(image):
  
     left_to_right = image.copy()
  
-    for row in range(image_row - 1, 0, -1):
-        for col in range(1, image_col):
+    for row in range(image_row - 2, 1, -1):
+        for col in range(1, image_col - 2):
             if left_to_right[row, col] == weak:
                 if left_to_right[row, col + 1] == 255 or left_to_right[row, col - 1] == 255 or left_to_right[row - 1, col] == 255 or left_to_right[
                     row + 1, col] == 255 or left_to_right[
@@ -224,9 +224,13 @@ def hysteresis(image):
                     left_to_right[row, col] = 0
  
     final_image = top_to_bottom + bottom_to_top + right_to_left + left_to_right
- 
-    final_image[final_image > 255] = 255
- 
+    
+    for i in range(0,len(final_image)):
+        for j in range(0,len(final_image[i])):
+                
+            if(final_image[i,j]):
+                    final_image[i,j] = 255
+    
     return final_image
 
 def extract_edges(img, sigma = 0.33):
@@ -278,18 +282,35 @@ def extract_edges(img, sigma = 0.33):
              
             if I_x[i,j] == 255 or I_y[i,j] == 255:
                 out_img[i,j] = 255
+            
+            elif I_x[i,j] == 50 or I_y[i,j] == 50:
+                out_img[i,j] = 50
     
     out_img = hysteresis(out_img)
     
     return np.array(out_img, np.uint8)
 
-def cartoon_effect(img, min_window_size, iteration, sigma = 0.33):
+
+def cartoon_effect(img, min_window_size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma_x = 1, flag = 0):
     
     img_edge = extract_edges(img, sigma = sigma)
     
     img_blur = edge_preserving(img, min_window_size, iteration)
     
     out_img = img_blur
+    
+#    Incorporation of the XDOG function
+    if(flag == 1):
+#       Creation of the gaussian kernels
+        gauss_1 = gaussian_kernel(sigma_x, 2)
+        gauss_2 = gaussian_kernel(k * sigma_x, 2)
+    
+        gauss_1_sum = np.sum(gauss_1)
+        gauss_2_sum = np.sum(gauss_2)
+    
+#       Both gaussian kernels are applied to the image
+        G1 = bf.spatial_filter(img, gauss_1 / gauss_1_sum)
+        G2 = bf.spatial_filter(img, gauss_2 / gauss_2_sum)
     
     for i in range(1, len(img) - 1):
         for j in range(1, len(img[i]) - 2):
@@ -298,5 +319,9 @@ def cartoon_effect(img, min_window_size, iteration, sigma = 0.33):
                 sum = np.sum(img[i-1:i+2, j-1:j+2])
                 
                 out_img[i,j] = sum / 9
-    
+
+#            Implementing the XDOG function if the flag has been set
+            elif(flag == 1):
+                out_img[i,j] += p * (G1[i,j] - G2[i,j])
+                
     return out_img

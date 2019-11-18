@@ -83,3 +83,16 @@ sigma = 0.33
 
 out_img9 = fun.cartoon_effect(img1, min_window_size, iteration, sigma = sigma)
 bf.display_multiple_images([img1, out_img9])
+
+# Problem 4
+# Incorporates the XDOG function with the cartoon effect
+
+min_window_size = 1
+iteration = 3
+sigma = 0.33
+k = 3
+p = 5
+sigma_x = 1
+
+out_img10 = fun.cartoon_effect(img1, min_window_size, iteration, sigma = sigma, k = k, p = p, sigma_x = sigma_x, flag = 1)
+bf.display_multiple_images([img1, out_img10])
