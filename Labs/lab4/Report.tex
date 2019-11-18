@@ -18,213 +18,117 @@
 	
 	\section{Stylization Effects}
 	
-	Edges in digital photos are usually sharp transitions in intensities between the two sides of the edge. This phenomenon can be exploited to figure out where there could be salient edges within the photo based on the fluctuation in intensity between two points. One way to do this in a digital image is to approximate continuous differentiation to figure out the change in pixel intensity values, using Sobel operators. The Sobel operators are presented as kernels and are represented as such:\\
+	\subsection{eXtended Difference of Gaussian}
 	
-	\begin{align*}
-	 h_{x}(x,y) = \left[
-	 \begin{matrix}
-	 	1 & 0 & -1\\
-	 	2 & 0 & -2\\
-	 	1 & 0 & -1
-	 \end{matrix}
-	 \right]
-	\end{align*}
+	The eXtended Difference of Gaussian filter is a simple tool that uses second-order derivative filtering and thresholding.\\
 	
-	\begin{align*}
-		h_{y}(x,y) = \left[
-		\begin{matrix}
-			 1 & 2 & 1\\
-			 0 & 0 & 0\\
-			-1 & -2 & -1
-		\end{matrix}
-		\right]
-	\end{align*}
-	
-	These masks must be convolved with the image to indicate the horizontal and vertical gradient of the image. Note that the second kernel is a transposed version of the first kernel. With these two transformation matrices, the next step in the procedure is to compute the gradient magnitude.
-	
-	\subsection{Gradient Magnitude}
-	
-	This step combines the two gradient matrices in a similar fashion to finding the gradient of a scalar field. The formula is listed below:\\
+	The first step in XDOG, is to find difference between two Gaussian blurred images, one with a standard deviation of $\sigma$, and the other is a scaled version, $k\sigma$, and the sum between that difference with the unscaled Gaussian blurred image. The equation below describes the XDOG filter:\\
 	
 	\begin{equation}
-		||\nabla I(x,y)|| = \sqrt{I_{x}(x,y))^2 + (I_{y}(x,y))^2}
+	D_{\sigma,k,p}(x,y) = (1 + p)G_{\sigma}(x,y) - pG_{k\sigma}(x,y)
 	\end{equation}\\
 	
-	In this equation, the two image gradients, $I_{x}(x,y)$ and $ I_{y}(x,y)$ are the two matrices found in the previous process. These two matrices represent the derivatives in the horizontal and vertical directions. These are used in the equation to pinpoint where there might be a strong edge in a particular direction. The magnitude of these two gradients can be combined to find the edges in every direction, not just vertical and horizontal.
+	The $k$ term describes the second image's blurring kernel coefficient that controls the level of blur. The only restriction of k is that it is a positive real number, k $>$ 0. The $p$ term describes the potency of the Difference of Gaussian; a higher value means that the difference part affects the original blur more. The values of p have no set range, however if the value exceeds a certain point, the values may experience overflow, thus ruining the intended output. The equation can be rearranged by factoring the values influenced by $p$ in equation 1 to show a more clear definition of the XDOG filter:\\
 	
-	\subsection{Non-Maximum Suppression}
+	\begin{equation}
+	D_{\sigma,k,p}(x,y) = G_{\sigma}(x,y) + p(G_{\sigma}(x,y) - G_{k\sigma}(x,y) ) 
+	\end{equation}\\
 	
-	 A Non-Maximum Suppression filter is a non-linear filter that suppresses a value, by setting it to zero, if it is not the local maximum value within the surrounding values of its neighboring values.\\
-	 
-	 This is useful for edge detection as the intensities of edges often increase and decrease at various points and degrees. This is used after the change in intensities have been evaluated, therefore discerning the strong edges from the weak edges is used here.\\
-	 
-	 The equation for the NMS filter is shown below, with $w[n]$ being the spliced array and $w_{max}$ representing the max value in the array:\\
-	 
+	By rearranging the equation, it is clear to see that the effect of this filter is a unsharp mask. The only main difference between this process and a normal unsharp mask is that the image is blurred initially, and then the edge image, the difference part of Gaussian, is added back to provide the edge details of the image.\\
+	
+	The next and final step is to threshold the image to produce the output image. Two methods were implemented in this lab, they can be referred to as hard and soft thresholding.\\
+	
+	Hard thresholding uses a threshold value, and sets any intensity value less than or equal to the value to 0 and any value greater than to 1. The equation below displays the definition:\\
+	
+	\begin{equation}
+	T(u) = \begin{cases} 
+	1, & u > \epsilon\\
+	0, & u \leq \epsilon
+	\end{cases} 
+	\end{equation}\\
+	
+	Soft Thresholding behaves slightly differently to the hard threshold, where there can be only two values for hard thresholding, there is a transistion between 0 and 1 for the soft thresholding method. This method uses the hyperbolic tangent function to determine the output value of the image if it less than the threshold value.\\
+	
 	 \begin{equation}
-	 NMS(w[n]) = \begin{cases} 
-	 0, & \mbox{if}\ w[n] < w_{max}\\
-	 w[n], & otherwise 
+	 T_{\phi}(u) = \begin{cases} 
+	 1, & u > \epsilon\\
+	 1 + tanh(\phi(u - \epsilon)), & u \leq \epsilon
 	 \end{cases} 
-	 \end{equation}
-	 \\
+	 \end{equation}\\
 	
-	This filter is ran twice, once in the horizontal direction and the other in the vertical direction. Once the two matrices are produced, the final step can be started.
+	The value, $\epsilon $ controls the sharpness of the transition between the 0 and 1 value.\\ 
 	
-	\subsection{Thresholding}
+	\subsection{Cartoon Effect}
 	
-	The final step involves weeding out certain intensities, due to the values of those pixels being small and thus not referred to as a strong edge. The function takes an image, and threshold value and produces a binary image, $B(x,y)$, such that the image outlines the edges by setting them to the max value, and their surroundings to the min value.\\
-	
-	This is represent by the function below:\\
-	
-	\begin{equation}
-		B(x,y) = \begin{cases} 
-		1, & I(x,y) \geq T\\
-		0, & I(x,y) < T
-		\end{cases} 
-	\end{equation}\\
-	
-	In the case of edge detection, the value of 1, or max value, indicates there is an edge at that index, and a 0 represents there is no such edge.\\
-	
-	Another step in the thresholding process is to merge the two binary images using an inclusive-or function. This will give the finished product combining both their edges to finalize the edge detection.
+	A non-organic filter that adds an effect to a digital image that gives the appearance of an image that has been painted by smearing and giving an effect of mixing colours. Additional effects can be added by adding the edges, the difference of Gaussians part, onto the effect described earlier, to finalize the stylization.
 	
 	\section{Assignment}
 	
-	\subsection{Filtering Functions}
+	\subsection{Problems}
 	
-	\subsubsection{Spatial Filter}
+	\subsubsection{XDOG}
 	
-	The spatial filter is the core piece in the edge detection, and in any kernel filtering process. This convolves the kernel with the image array to produce a new transformed image, or array. The particular filter used in this lab uses a zero pad to avoid out of boundary indexing issues. However, this process does have an issue with the borders of the images as they are usually lower values due to the nature of the spatial filter and the zero padding contributing to the overall sum of the value.\\
+	\smallskip
 	
-	The Spatial Filter is shown in the code below:\\
+	\textbf{XDOG}
 	
-	\noindent def spatial\textunderscore filter(F, W):\\
+	The eXtended Difference of Gaussians filter implementation follows the same guidelines as equation 1 and 2 and the descriptions above. The following filter is strictly a grayscale filter and any coloured images are converted at the beginning the code below.\\
+		
+	\noindent \# eXtended Difference of Gaussian\\
+	\noindent def XDOG(img, k, sigma, p):\\
 	\\
-	\indent a,b = W.shape\\
-	\indent m,n = F.shape\\
+	\indent img\textunderscore temp = img.copy()\\
 	\\
-	\indent F\textunderscore double = np.array(F.copy(), np.double)\\
+	\indent \#    Check for RGB image, if so then convert to grayscale\\
+	\indent if img\textunderscore temp.ndim == 3:\\
+	\indent \indent img\textunderscore temp = cv2.cvtColor(img\textunderscore temp, cv2.COLOR\textunderscore BGR2GRAY)\\
 	\\
-	\indent \# if filter kernel has size 1 by 1\\
-	\indent if a == 1 \& b == 1:\\
+	\indent img\textunderscore temp = np.array(img\textunderscore temp, np.double)\\
 	\\
-	\indent \indent I = W*F\\
-	\indent \indent return I\\
+	\indent \#    Creation of the gaussian kernels\\
+	\indent gauss\textunderscore 1 = gaussian\textunderscore kernel(sigma, 2)\\		\indent gauss\textunderscore 2 = gaussian\textunderscore kernel(k * sigma, 2)\\
 	\\
-	\indent \# finding if column of kernel is odd or even and establishing the padding\\ 
-	\indent \# parameters for the padded array\\
+	\indent gauss\textunderscore 1\textunderscore sum = np.sum(gauss\textunderscore 1)\\
+	\indent gauss\textunderscore 2\textunderscore sum = np.sum(gauss\textunderscore 2)\\
 	\\
-	\indent col\textunderscore right, col\textunderscore left = padding\textunderscore param(b)\\
-	\indent row\textunderscore bottom, row\textunderscore top = padding\textunderscore param(a)\\
+	\indent \#    Both gaussian kernels are applied to the image\\
+	\indent G1 = bf.spatial\textunderscore filter(img\textunderscore temp, \indent gauss\textunderscore 1 / gauss\textunderscore 1\textunderscore sum)\\
+	\indent G2 = bf.spatial\textunderscore filter(img\textunderscore temp, \indent gauss\textunderscore 2 / gauss\textunderscore 2\textunderscore sum)\\
 	\\
-	\indent \# creating a padded array and an output for the convolution operation \\
-	\indent F\textunderscore temp = np.zeros([m+col\textunderscore left+col\textunderscore right,n+row\textunderscore top+row\textunderscore bottom])\\
-	\indent F\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] = 1.0\\
-	\indent F\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] *= F\textunderscore double\\
-	\indent I = np.zeros\textunderscore like(F\textunderscore double)\\
+	\indent \#    Difference of Gaussian Computation\\
+	\indent img\textunderscore temp[:,:] = (1 + p) * G1[:,:] - p * G2[:,:]\\
 	\\
-	\indent \# iterating over the length and width of the original size of the array\\
-	\indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
-	\indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
-	\\
-	\indent \indent \indent sum = 0\\
-	\\
-	\indent \indent \indent \# partioning a section the same size as the kernel for the \\
-	\indent \indent \indent \# convoltion operation and then computing the convolution and\\
-	\indent \indent \indent \# storing it in the output array\\
-	\\
-	\indent \indent \indent snap = F\textunderscore temp[i-row\textunderscore top: i+row\textunderscore bottom+1, j-col\textunderscore left: j+col\textunderscore right+1].copy()\\
-	\indent \indent \indent for l in range(0,len(W)):\\
-	\indent \indent \indent \indent for k in range(0,len(W[l])):\\
-	\indent \indent \indent \indent \indent sum += snap[l][k] * W[l][k]\\
-	\indent \indent \indent I[i-row\textunderscore top][j-col\textunderscore left] = sum\\
-	\\
-	\indent return I\\
-	
-	It also uses the padding\textunderscore param function which determines the padding values for the image based on the size of the kernel. The code for the function is found below:\\
-	
-	\noindent def padding\textunderscore param(a):\\
-	\\
-	\indent if a \% 2 == 1: \\
-	\indent \indent m = int((a - 1)/ 2)\\
-	\indent \indent n = int(m)\\
-	\\
-	\indent else:\\
-	\indent \indent	m = int(a / 2)\\
-	\indent \indent n = int(m - 1)\\
-	\\
-	\indent return m,n\\
-	
-	The test image shown below in Image 1 was convolved with a Gaussian filter shown below in, to produce an blurry output image shown in Image 2:\\
-	
-	\begin{align*}
-	h(x,y) = \frac{1}{331}\left[
-	\begin{matrix}
-	1 & 4 & 7 & 4 & 1\\
-	4 & 20 & 33 & 20 & 4\\
-	7 & 33 & 55 & 33 & 7\\
-	4 & 20 & 33 & 20 & 4\\
-	1 & 4 & 7 & 4 & 1
-	\end{matrix}
-	\right]
-	\end{align*}\\
-	
+	\indent return np.array(img\textunderscore temp, np.uint8)\\
+		
+	These are the input and output images for various values of k, p, and $\sigma$:\\
+		
 	\begin{center}
 		\noindent \includegraphics[scale=0.75]{lena}\\
 		Image 1: Input Image\\
-		
+			
 		\includegraphics[scale=0.75]{s211o}\\
 		Image 2: Output Image\\
 	\end{center}
+		
+	The hard and soft threshold functions found in equations 3 and 4 are implemented below. The images below differ from the equations described above as they are not binary images, but images that range across the unsigned 8-bit spectrum.\\
+		
+	\smallskip	
 	
-	\subsubsection{Non-Maximum Suppression}
+	\noindent \textbf{Soft Thresholding}\\
+		
+	\noindent \# Produces binary threshold image\\
+	\noindent def hard\textunderscore threshold(img, cutoff):\\
+	\\
+	\indent out = np.zeros\textunderscore like(img)\\
+	\\
+	\indent \# applies the max value to the intensities greater than the cutoff\\
+	\indent out[img $>$ cutoff] = 255\\
+	\\	
+	\indent return out\\
 	
-	The Non-Maximum Filter functions the same way as described above in the introduction. The function takes in an image array, and a height and width of the NMS filtering window and outputs two filtered images, one with horizontal filtering and the other with vertical filtering.\\
+	Output images for the images produced in the XDOG filter above.\\
 	
-	Furthermore, it uses the same zero padding algorithm as shown above to avoid any indexing issues. These zero values do not affect the overall output of the image as the pixel intensities are assumed to be all positive value and thus 0 is the minimum number possible. The code is shown below:\\
-	
-	\noindent def non\textunderscore max\textunderscore suppress(img, H, W):\\
-	\\
-	\indent m,n = img.shape\\
-	\\
-	\indent if H == 1 \& W == 1:\\
-	\indent \indent return img\\
-	\\
-	\indent \# establishing the padding parameters for the padded array\\   
-	\indent col\textunderscore right, col\textunderscore left = padding\textunderscore param(W)\\
-	\indent row\textunderscore bottom, row\textunderscore top = padding\textunderscore param(H)\\
-	\\
-	\indent \# creating a padded array and an output for the max operation\\
-	\indent F\textunderscore temp = np.zeros([m+col\textunderscore left+col\textunderscore right,n+row\textunderscore top+row\textunderscore bottom])\\
-	\indent F\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] = 1.0\\
-	\indent F\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] *= img\\
-	\indent I\textunderscore vertical = np.zeros\textunderscore like(img)\\
-	\indent I\textunderscore horizontal = np.zeros\textunderscore like(img)\\
-	\\
-	\indent \# iterating over the original array while applying a horizontal kernel\\
-	\indent \# with a max value filter\\
-	\indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
-	\indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
-	\\
-	\indent \indent \indent \# partitioning the array and computing the max value and storing\\
-	\indent \indent \indent \# it in the output array\\
-	\\
-	\indent \indent \indent snap = F\textunderscore temp[i-row\textunderscore top: i+row\textunderscore bottom+1, j].copy()\\
-	\indent \indent \indent if snap[row\textunderscore top] == np.amax(snap):\\
-	\indent \indent \indent \indent I\textunderscore horizontal[i-row\textunderscore top,j-col\textunderscore left] = snap[row\textunderscore top]\\
-	\\
-	\indent \# same operation as above except with a vertical kernel\\
-	\indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
-	\indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
-	\\
-	\indent \indent \indent snap = F\textunderscore temp[i, j-col\textunderscore left: j+col\textunderscore right+1].copy()\\
-	\indent \indent \indent if snap[col\textunderscore left] == np.amax(snap):\\
-	\indent \indent \indent \indent I\textunderscore vertical[i-row\textunderscore top,j-col\textunderscore left] = snap[col\textunderscore left]\\
-	\\
-	return I\textunderscore horizontal, I\textunderscore vertical\\
-	
-	This function was tested with Image 3 below to produce the following two images, one for the horizontal filtering and the other for vertical.\\
-	
-		\begin{center}
+	\begin{center}
 		\noindent \includegraphics[scale=0.75]{nms-test}\\
 		Image 3: Input Image\\
 		
@@ -233,49 +137,79 @@
 		
 		\includegraphics[scale=0.75]{s212oy}\\
 		Image 5: Output Image, Vertical\\
-		
-		\end{center}
+	\end{center}
 	
-	\subsubsection{Thresholding}
+	\smallskip
 	
-	The function for image thresholding is similar to the one mentioned above. This thresholding function takes the inputs of an image and a threshold ratio between the values of 0 and 1. The threshold value is then multiplied by the max value of the data type of the array and then is used to compare if each value above or below the threshold value and assigns the max value or 0 to the output binary image accordingly. The code for this function is displayed below:\\
+	\textbf{Soft Threshold}\\
 	
-	\noindent def image\textunderscore thresholding(img, T):\\
+	\noindent \# Implements a soft thresholding function\\
+	def soft\textunderscore thereshold(img, cutoff, phi):\\
 	\\
-	\indent if 0 $>$ T or T $>$ 1:\\
-	\indent \indent return img\\
+	\indent out = np.array(np.ones\textunderscore like(img), np.double)\\
 	\\
-	\indent max\textunderscore value = np.iinfo(img.dtype).max\\
+	\indent \# apply the threshold function\\
+	\indent out[img <= cutoff] = 1 + np.tanh(phi * (img[i][j]) - cutoff)\\
 	\\
-	\indent \# Checks for the max value of the data type the image uses and multiplies\\
-	\indent \# it with the ratio\\
-	\indent T *= max\textunderscore value\\
-	\\
-	\indent B = np.zeros\textunderscore like(img)\\
-	\\
-	\indent for i in range(0,len(img)):\\
-	\indent \indent for j in range(0,len(img[i])):\\
-	\\
-	\indent \indent \indent if img[i,j] $\leq$ T:\\
-	\indent \indent \indent\indent 	B[i,j] = max\textunderscore value\\
-	\indent return B\\
+	\indent return np.array( out * 255, np.uint8)\\
 	
-	The code was tested on the photo shown below to produce the image at varying threshold values, $T$.\\
+	Output images for the images produced in the XDOG filter above.\\
 	
 	\begin{center}
-		\noindent \includegraphics[scale=0.75]{threshold-test}\\
-		Image 6: Input Image\\
+		\noindent \includegraphics[scale=0.75]{nms-test}\\
+		Image 3: Input Image\\
 		
-		\includegraphics[scale=0.75]{s213o25}\\
-		Image 7: Output Image, T = 25\% \\
+		\includegraphics[scale=0.75]{s212ox}\\
+		Image 4: Output Image, Horizontal\\
 		
-		\includegraphics[scale=0.75]{s213o50}\\
-		Image 8: Output Image, T = 50\% \\
-		
-		\includegraphics[scale=0.75]{s213o75}\\
-		Image 9: Output Image, T = 75\% \\
-
+		\includegraphics[scale=0.75]{s212oy}\\
+		Image 5: Output Image, Vertical\\
 	\end{center}
+
+	\smallskip
+	
+	\textbf{Three-Tone Operator}\\
+	
+	For the three tone generator, the same method that was in the soft thresholding was applied to this operator. Instead of the hyperbolic tangent function being applied when the threshold wasn't exceeded, the function is applied globally. The code for the function is shown below:\\
+	
+	\noindent \# Three tone generator\\
+	\noindent def three\textunderscore tone(img, cutoff, phi):\\
+	\\
+	\indent out = np.array(np.ones\textunderscore like (img), np.double)\\
+	\\
+	\indent for i in range(0, len(img)):\\
+	\indent \indent for j in range(0, len(img[i])):\\
+	\\
+	\indent \indent \indent out[i][j] = 1 + np.tanh(phi * (img[i][j] - cutoff) )\\
+	\\
+	\indent return np.array( (out * 127) + 1, np.uint8)\\
+	
+	Output images for the images produced in the XDOG filter above.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.75]{nms-test}\\
+		Image 3: Input Image\\
+		
+		\includegraphics[scale=0.75]{s212ox}\\
+		Image 4: Output Image, Horizontal\\
+		
+		\includegraphics[scale=0.75]{s212oy}\\
+		Image 5: Output Image, Vertical\\
+	\end{center}
+	
+	\subsubsection{Oilify Filter}
+	
+	Need to add.
+	
+	\subsection{Cartoon Effect}
+	
+	\smallskip
+	
+	\textbf{Edge Preserving, Smoothing Area Filter}
+	
+	This filter was implemented to smooth out the image, to produce a cartoon blur effect while preserving the edges. This filter was achieved by using a median filter and expanding the dimensions of the kernel every iteration.\\
+	
+	
 	
 	\subsection{Edge Detector}
 	

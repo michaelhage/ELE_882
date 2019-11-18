@@ -37,29 +37,29 @@ def XDOG(img, k, sigma, p):
     
     img_temp = np.array(img_temp, np.double)
     
+#    Creation of the gaussian kernels
     gauss_1 = gaussian_kernel(sigma, 2)
     gauss_2 = gaussian_kernel(k * sigma, 2)
     
     gauss_1_sum = np.sum(gauss_1)
     gauss_2_sum = np.sum(gauss_2)
     
+#    Both gaussian kernels are applied to the image
     G1 = bf.spatial_filter(img_temp, gauss_1 / gauss_1_sum)
     G2 = bf.spatial_filter(img_temp, gauss_2 / gauss_2_sum)
     
+#    Difference of Gaussian Computation
     img_temp[:,:] = (1 + p) * G1[:,:] - p * G2[:,:]
     
     return np.array(img_temp, np.uint8)
 
 #Produces binary threshold image
-def simple_threshold(img, cutoff):
+def hard_threshold(img, cutoff):
     
     out = np.zeros_like(img)
     
-    for i in range(0, len(img)):
-        for j in range(0, len(img[i])):
-            
-            if img[i][j] > cutoff:
-                out[i][j] = 255
+#    applies the max value to the intensities greater than the cutoff
+    out[img > cutoff] = 255
     
     return out
 
@@ -72,18 +72,21 @@ def soft_thereshold(img, cutoff, phi):
         for j in range(0, len(img[i])):
             
             if img[i][j] <= cutoff:
-                out[i][j] = 1 + np.tanh(phi * (img[i][j]) - cutoff)
+                out[i][j] = 1 + np.tanh(phi * (img[i][j] - cutoff))
+            
+    return np.array( out * 255, np.uint8)
+
+# Three tone generator
+def three_tone(img, cutoff, phi):
+    
+    out = np.array(np.ones_like(img), np.double)
+    
+    for i in range(0, len(img)):
+        for j in range(0, len(img[i])):
+                
+            out[i][j] = 1 + np.tanh(phi * (img[i][j] - cutoff) )
             
     return np.array( (out * 127) + 1, np.uint8)
-
-
-def three_tone(img, cutoff, phi, k, sigma, p):
-    
-    out = XDOG(img, k, sigma, p)
-    
-    out = soft_thereshold(out, cutoff, phi)
-    
-    return out
 
 
 def oilify(img, R, gamma):
