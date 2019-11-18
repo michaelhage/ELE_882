@@ -136,48 +136,164 @@ def edge_preserving(img, min_window_size, iteration):
     out_img = img.copy()
     
 #    Check for RGB image, if so then convert to grayscale
-    if out_img.ndim == 3:
+    if out_img.ndim == 3:         
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
-    
-    for i in range(0, iteration):
-        out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
+        
+    else:
+        for i in range(0, iteration):
+            out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
     
     return out_img
 
-def extract_edges(img, threshold):
+
+def threshold(img, hi, lo):
+    
+#    Values for strong and weak edges
+    high = 255
+    low = 50
     
     out_img = np.zeros_like(img)
     
+    strong_x, strong_y = np.where(img >= hi)
+    weak_x, weak_y = np.where((img <= hi) & (img >= lo))
+
+    out_img[strong_x, strong_y] = high
+    out_img[weak_x, weak_y] = low
+    
+    return np.array(out_img, np.uint8)
+
+def hysteresis(image):
+    
+    weak = 50
+    
+    image_row, image_col = image.shape
+ 
+    top_to_bottom = image.copy()
+ 
+    for row in range(1, image_row):
+        for col in range(1, image_col):
+            if top_to_bottom[row, col] == weak:
+                if top_to_bottom[row, col + 1] == 255 or top_to_bottom[row, col - 1] == 255 or top_to_bottom[row - 1, col] == 255 or top_to_bottom[
+                    row + 1, col] == 255 or top_to_bottom[
+                    row - 1, col - 1] == 255 or top_to_bottom[row + 1, col - 1] == 255 or top_to_bottom[row - 1, col + 1] == 255 or top_to_bottom[
+                    row + 1, col + 1] == 255:
+                    top_to_bottom[row, col] = 255
+                else:
+                    top_to_bottom[row, col] = 0
+ 
+    bottom_to_top = image.copy()
+ 
+    for row in range(image_row - 1, 0, -1):
+        for col in range(image_col - 1, 0, -1):
+            if bottom_to_top[row, col] == weak:
+                if bottom_to_top[row, col + 1] == 255 or bottom_to_top[row, col - 1] == 255 or bottom_to_top[row - 1, col] == 255 or bottom_to_top[
+                    row + 1, col] == 255 or bottom_to_top[
+                    row - 1, col - 1] == 255 or bottom_to_top[row + 1, col - 1] == 255 or bottom_to_top[row - 1, col + 1] == 255 or bottom_to_top[
+                    row + 1, col + 1] == 255:
+                    bottom_to_top[row, col] = 255
+                else:
+                    bottom_to_top[row, col] = 0
+ 
+    right_to_left = image.copy()
+ 
+    for row in range(1, image_row):
+        for col in range(image_col - 1, 0, -1):
+            if right_to_left[row, col] == weak:
+                if right_to_left[row, col + 1] == 255 or right_to_left[row, col - 1] == 255 or right_to_left[row - 1, col] == 255 or right_to_left[
+                    row + 1, col] == 255 or right_to_left[
+                    row - 1, col - 1] == 255 or right_to_left[row + 1, col - 1] == 255 or right_to_left[row - 1, col + 1] == 255 or right_to_left[
+                    row + 1, col + 1] == 255:
+                    right_to_left[row, col] = 255
+                else:
+                    right_to_left[row, col] = 0
+ 
+    left_to_right = image.copy()
+ 
+    for row in range(image_row - 1, 0, -1):
+        for col in range(1, image_col):
+            if left_to_right[row, col] == weak:
+                if left_to_right[row, col + 1] == 255 or left_to_right[row, col - 1] == 255 or left_to_right[row - 1, col] == 255 or left_to_right[
+                    row + 1, col] == 255 or left_to_right[
+                    row - 1, col - 1] == 255 or left_to_right[row + 1, col - 1] == 255 or left_to_right[row - 1, col + 1] == 255 or left_to_right[
+                    row + 1, col + 1] == 255:
+                    left_to_right[row, col] = 255
+                else:
+                    left_to_right[row, col] = 0
+ 
+    final_image = top_to_bottom + bottom_to_top + right_to_left + left_to_right
+ 
+    final_image[final_image > 255] = 255
+ 
+    return final_image
+
+def extract_edges(img, sigma = 0.33):
+    """ 
+    This will extract edges more vividly compared to the earlier edition in lab 2
+    This particular one adds hysteresis to figure out connecting edges and has auto 
+    thesholding with high and lower limits to remove more detailed parts of the image 
+    and retain only the important aspects
+    """
+    
+    out_img = np.zeros_like(img)
+    
+#    parameter for auto thresholding
+    med = np.median(img)
+    
+#    High and Low Auto Threshold Values
+    lo_thresh = int(max(0, (1.0 - sigma) * med))
+    hi_thresh = int(min(255, (1.0 + sigma) * med))
+    
+#    Sobel Filter
+    H = np.array([[1, 0, -1],
+                  [2, 0, -2],
+                  [1, 0, -1]])
+    
+#    Transposed Sobel
+    H_t = np.transpose(H)
+    
+#    Gaussian Kernel
     gauss = gaussian_kernel(1, 2)
     gauss_sum = np.sum(gauss)
     
-    laplace = np.array([[-1, -1, -1],
-                        [-1, 8, -1],
-                        [-1, -1, -1]])
-    
+#    Noise Reduction Step, Gaussian Blur
     img_temp = bf.spatial_filter(img, gauss / gauss_sum)
     
-    img_temp = bf.spatial_filter(img_temp, laplace)
+    I_x = bf.spatial_filter(img_temp, H)
+    I_y = bf.spatial_filter(img_temp, H_t)
+     
+#    Compute gradient magnitude
+    I = np.sqrt(I_x**2 + I_y**2)
+     
+#    Suppressing low fluctuations in intensities
+    I_x, I_y = bf.non_max_suppress(I, 5, 5)
     
+    I_x = threshold(I_x, hi_thresh, lo_thresh)
+    I_y = threshold(I_y, hi_thresh, lo_thresh)
     
-    for i in range(1,len(img_temp)-1):
-        for j in range(1,len(img_temp[i])-1):
-            
-            if(np.absolute(img_temp[i][j]) > threshold):
-                
-                if(img_temp[i-1][j] < 0 and img_temp[i+1][j] > 0) or (img_temp[i-1][j] > 0 and img_temp[i+1][j] < 0):
-                    out_img[i][j] += 1
-                
-                if(img_temp[i][j-1] < 0 and img_temp[i][j+1] > 0) or (img_temp[i][j-1] > 0 and img_temp[i][j+1] < 0):
-                    out_img[i][j] += 1
-                
-                if(img_temp[i+1][j+1] < 0 and img_temp[i-1][j-1] > 0) or (img_temp[i+1][j+1] > 0 and img_temp[i-1][j-1] < 0):
-                    out_img[i][j] += 1
-                
-                if(img_temp[i-1][j+1] < 0 and img_temp[i+1][j-1] > 0) or (img_temp[i-1][j+1] > 0 and img_temp[i+1][j-1] < 0):
-                    out_img[i][j] += 1
-                
-                if(out_img[i][j] > 2):
-                    out_img[i][j] = 255
+    for i in range(0,len(I_x)):
+        for j in range(0, len(I_x[i])):
+             
+            if I_x[i,j] == 255 or I_y[i,j] == 255:
+                out_img[i,j] = 255
+    
+    out_img = hysteresis(out_img)
     
     return np.array(out_img, np.uint8)
+
+def cartoon_effect(img, min_window_size, iteration, sigma = 0.33):
+    
+    img_edge = extract_edges(img, sigma = sigma)
+    
+    img_blur = edge_preserving(img, min_window_size, iteration)
+    
+    out_img = img_blur
+    
+    for i in range(1, len(img) - 1):
+        for j in range(1, len(img[i]) - 2):
+            
+            if(img_edge[i, j] == 255):
+                sum = np.sum(img[i-1:i+2, j-1:j+2])
+                
+                out_img[i,j] = sum / 9
+    
+    return out_img
