@@ -77,6 +77,8 @@ out_img8 = fun.extract_edges(img1, sigma = sigma)
 bf.display_multiple_images([img1, out_img8])
 
 # Problem 3
+# Implement the Cartoon Effect
+
 min_window_size = 1
 iteration = 3
 sigma = 0.33

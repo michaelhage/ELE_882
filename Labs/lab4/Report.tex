@@ -2,13 +2,13 @@
 \usepackage[margin=0.75in]{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{pdfpages}
+%\usepackage{pdfpages}
 
 \graphicspath{{./LatexImg/}}
 
 \begin{document}
 	
-	\includepdf{CoverPage.pdf}
+	%\includepdf{CoverPage.pdf}
 	
 	First and foremost, the programming language used to conduct this lab is Python 3.7, and the libraries primarily used are opencv2, numpy, and matplotlib. To view the cover page if it doesn't display properly, open \textbf{CoverPage.pdf} included in the folder provided.\\
 	
@@ -98,13 +98,13 @@
 		
 	These are the input and output images for various values of k, p, and $\sigma$:\\
 		
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{lena}\\
-		Image 1: Input Image\\
+	%\begin{center}
+	%	\noindent \includegraphics[scale=0.75]{lena}\\
+	%	Image 1: Input Image\\
 			
-		\includegraphics[scale=0.75]{s211o}\\
-		Image 2: Output Image\\
-	\end{center}
+	%	\includegraphics[scale=0.75]{s211o}\\
+	%	Image 2: Output Image\\
+	%\end{center}
 
 	\subsubsection{Threshold}
 		
@@ -126,16 +126,16 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{nms-test}\\
-		Image 3: Input Image\\
-		
-		\includegraphics[scale=0.75]{s212ox}\\
-		Image 4: Output Image, Horizontal\\
-		
-		\includegraphics[scale=0.75]{s212oy}\\
-		Image 5: Output Image, Vertical\\
-	\end{center}
+%	\begin{center}
+%		\noindent \includegraphics[scale=0.75]{nms-test}\\
+%		Image 3: Input Image\\
+%		
+%		\includegraphics[scale=0.75]{s212ox}\\
+%		Image 4: Output Image, Horizontal\\
+%		
+%		\includegraphics[scale=0.75]{s212oy}\\
+%		Image 5: Output Image, Vertical\\
+%	\end{center}
 	
 	\smallskip
 	
@@ -153,16 +153,16 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{nms-test}\\
-		Image 3: Input Image\\
-		
-		\includegraphics[scale=0.75]{s212ox}\\
-		Image 4: Output Image, Horizontal\\
-		
-		\includegraphics[scale=0.75]{s212oy}\\
-		Image 5: Output Image, Vertical\\
-	\end{center}
+%	\begin{center}
+%		\noindent \includegraphics[scale=0.75]{nms-test}\\
+%		Image 3: Input Image\\
+%		
+%		\includegraphics[scale=0.75]{s212ox}\\
+%		Image 4: Output Image, Horizontal\\
+%		
+%		\includegraphics[scale=0.75]{s212oy}\\
+%		Image 5: Output Image, Vertical\\
+%	\end{center}
 	
 	\subsection{Three-Tone Operator}
 	
@@ -182,16 +182,16 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{nms-test}\\
-		Image 3: Input Image\\
-		
-		\includegraphics[scale=0.75]{s212ox}\\
-		Image 4: Output Image, Horizontal\\
-		
-		\includegraphics[scale=0.75]{s212oy}\\
-		Image 5: Output Image, Vertical\\
-	\end{center}
+%	\begin{center}
+%		\noindent \includegraphics[scale=0.75]{nms-test}\\
+%		Image 3: Input Image\\
+%		
+%		\includegraphics[scale=0.75]{s212ox}\\
+%		Image 4: Output Image, Horizontal\\
+%		
+%		\includegraphics[scale=0.75]{s212oy}\\
+%		Image 5: Output Image, Vertical\\
+%	\end{center}
 	
 	\subsection{Oilify Filter}
 	
@@ -201,7 +201,7 @@
 	
 	\subsubsection{Edge Preserving, Smoothing Area Filter}
 	
-	This filter was implemented to smooth out the image, to produce a cartoon blur effect while preserving the edges. This filter was achieved by using a median filter and expanding the dimensions of the kernel every iteration.\\
+	This filter was implemented to smooth out the image, to produce a cartoon blur effect while preserving the edges. This filter was achieved by using a median filter and expanding the dimensions of the kernel every iteration. This function allows the edges to be preserved as the median filter will not filter out strong edges due to the complete difference in intensities between both sides of the edge. Consequently, it allows the overall image to be smoothed out as a whole, achieving the desired effect.\\
 	
 	\noindent def edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration):\\
 	\\
@@ -218,193 +218,277 @@
 	
 	The filter produced the following output with the input provided below:\\
 	
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{lena}\\
-		Image 1: Input Image\\
-		
-		\includegraphics[scale=0.75]{s211o}\\
-		Image 2: Output Image\\
-	\end{center}
+%	\begin{center}
+%		\noindent \includegraphics[scale=0.75]{lena}\\
+%		Image 1: Input Image\\
+%		
+%		\includegraphics[scale=0.75]{s211o}\\
+%		Image 2: Output Image\\
+%	\end{center}
 	
 	\subsubsection{Edge Detector}
 	
-	The edge detector utilizes the functions described above to perform the pipeline outlined in the introduction to find the edges of any input images. The edge detector's inputs are an image array, a derivative kernel, an optional threshold value, and a window size for the NMS filter. \\
+	The edge detector's purpose is to discover the edges in a pleasant manner in order to implement it in the cartoon effect. \\
 	
-	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. Afterwards, the magnitude of the image gradients is found by using equation 1, outlined above. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones. Finally, the combination of the two images through the inclusive or function unites the two images to produce the final product that displays the edges of the image file.\\
+	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found by using equation 1, outlined above. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
 	
-	The code for the edge detector is shown below:\\
+	\noindent The code for the edge detector is shown below:\\
 	
-	\noindent def edge\textunderscore detector(img, H, T=0.1, wndsz=5):\\
+	\noindent \textbf{Edge Extract Main}
+	
+	\smallskip
+	
+	\noindent def extract\textunderscore edges(img, sigma = 0.33):\\
 	\\
-	\indent \# Converts the image to a grayscale if it isn't already\\
-	\indent if(img.size == 3):\\
-	\indent \indent I = cv2.cvtColor(img.copy(), cv2.COLOR\textunderscore BGR2GRAY)\\
-	\indent else:\\
-	\indent \indent I = img.copy()\\
+	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
 	\\
-	\indent \# Gaussian Kernel to reduce noise\\
-	\indent g\textunderscore kernel = np.array([[1, 4, 7, 4, 1],\\
-	\indent \indent [4, 20, 33, 20, 4],\\
-	\indent \indent [7, 33, 55, 33, 7],\\
-	\indent \indent [4, 20, 33, 20, 4],\\
-	\indent \indent [1, 4, 7, 4, 1]])\\
+	\indent \# Parameter for auto thresholding\\
+	\indent med = np.median(img)\\
 	\\
-	\indent g\textunderscore sum = np.sum(g\textunderscore kernel)  \\ 
+	\indent \# High and Low Auto Threshold Values\\
+	\indent lo\textunderscore thresh = int(max(0, (1.0 - sigma) * med))\\
+	\indent hi\textunderscore thresh = int(min(255, (1.0 + sigma) * med))\\
 	\\
-	\indent \# Gets the transpose of the horizontal kernel to get the vertical kernel\\
+	\indent \# Sobel Filter\\
+	\indent H = np.array([[1, 0, -1],\\
+	\indent \indent [2, 0, -2],\\
+	\indent \indent [1, 0, -1]])\\
+	\\
+	\indent \# Transposed Sobel\\
 	\indent H\textunderscore t = np.transpose(H)\\
 	\\
-	\indent \# used to reduce noise in the image while preserving edges\\
-	\indent I = spatial\textunderscore filter(I, g\textunderscore kernel / g\textunderscore sum) \\ 
+	\indent \# Gaussian Kernel\\
+	\indent gauss = gaussian\textunderscore kernel(1, 2)\\
+	\indent gauss\textunderscore sum = np.sum(gauss)\\
 	\\
-	\indent \# Convolutes the derivative approximation kernels to find the image \\
-	\indent \# gradients\\
-	\indent I\textunderscore x, I\textunderscore y = spatial\textunderscore filter(I, H), spatial\textunderscore filter(I, H\textunderscore t)\\
+	\indent \# Noise Reduction Step, Gaussian Blur\\
+	\indent img\textunderscore temp = bf.spatial\textunderscore filter(img, gauss / gauss\textunderscore sum)\\
 	\\
-	\indent \# Computes the gradient magnitude\\
+	\indent I\textunderscore x = bf.spatial\textunderscore filter(img\textunderscore temp, H)\\
+	\indent I\textunderscore y = bf.spatial\textunderscore filter(img\textunderscore temp, H\textunderscore t)\\
+	\\
+	\indent \# Compute gradient magnitude\\
 	\indent I = np.sqrt(I\textunderscore x**2 + I\textunderscore y**2)\\
-	  \\
+	\\
 	\indent \# Suppressing low fluctuations in intensities\\
-	\indent I\textunderscore x, I\textunderscore y = non\textunderscore max\textunderscore suppress(I, wndsz, wndsz)\\
+	\indent I\textunderscore x, I\textunderscore y = bf.non\textunderscore max\textunderscore suppress(I, 5, 5)\\
 	\\
-	\indent \# Threshold all small values that indicate weak edges\\
-	\indent \# I = image\textunderscore thresholding(np.array(I, np.uint8), T)\\
-	\indent I\textunderscore x = image\textunderscore thresholding(np.array(I\textunderscore x, np.uint8), T)\\
-	\indent I\textunderscore y = image\textunderscore thresholding(np.array(I\textunderscore y, np.uint8), T)\\
-	\\
-	\indent max\textunderscore value = np.iinfo(img.dtype).max\\
+	\indent I\textunderscore x = threshold(I\textunderscore x, hi\textunderscore thresh, lo\textunderscore thresh)\\
+	\indent I\textunderscore y = threshold(I\textunderscore y, hi\textunderscore thresh, lo\textunderscore thresh)\\
 	\\
 	\indent for i in range(0,len(I\textunderscore x)):\\
 	\indent \indent for j in range(0, len(I\textunderscore x[i])):\\
 	\\
-	\indent \indent \indent if I\textunderscore x[i][j] == max\textunderscore value or I\textunderscore y[i][j] == max\textunderscore value:\\
-	\indent \indent \indent \indent I[i][j] = max\textunderscore value\\
-	\indent \indent \indent else:\\
-	\indent \indent \indent I[i][j] = 0\\
+	\indent \indent \indent if I\textunderscore x[i,j] == 255 or I\textunderscore y[i,j] == 255:\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = 255\\
 	\\
-	\indent return I\\
+	\indent \indent \indent elif I\textunderscore x[i,j] == 50 or I\textunderscore y[i,j] == 50:\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = 50\\
+	\\
+	\indent \indent \indent elif(I\textunderscore x[i,j] == 50 or I\textunderscore y[i,j] == 255) or (I\textunderscore x[i,j] == 255 or I\textunderscore y[i,j] == 50):\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = 50\\
+	\\
+	\indent out\textunderscore img = hysteresis(out\textunderscore img)\\
+	\\
+	\indent return np.array(out\textunderscore img, np.uint8)\\
 	
-	The input image used is the same one in Image 1. The output image is shown below for both default parameters and manual parameters:\\
+	\smallskip
 	
-	\begin{center}
-		\noindent \includegraphics[scale=0.75]{s22o-def}\\
-		Image 10: Output Image, Default Parameters\\
-		
-		\includegraphics[scale=0.75]{s22o-adj}\\
-		Image 11: Output Image, T = 30\%, window size = 7 \\
-		
-	\end{center}
+	\noindent \textbf{Thresholding}
+	
+	\smallskip
+	
+	\noindent def threshold(img, hi, lo):\\
+	\\
+	\indent \# Values for strong and weak edges\\
+	\indent high = 255\\
+	\indent low = 50\\
+	\\
+	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
+	\\
+	\indent strong\textunderscore x, strong\textunderscore y = np.where(img $geq$ hi)\\
+	\indent weak\textunderscore x, weak\textunderscore y = np.where((img $\leq$ hi) and (img $\geq$ lo))\\
+	\\
+	\indent out\textunderscore img[strong\textunderscore x, strong\textunderscore y] = high\\
+	\indent out\textunderscore img[weak\textunderscore x, weak\textunderscore y] = low\\
+	\\
+	\indent return np.array(out\textunderscore img, np.uint8)\\
+	
+	\smallskip
+	
+	\textbf{Hysteresis}
+	
+	This function below was influenced greatly by Abhisek Jana's implementation[1] of this function.\\
+	
+	\noindent def hysteresis(image):\\
+	\\
+	\indent weak = 50\\
+	\\
+	\indent image\textunderscore row, image\textunderscore col = image.shape\\
+	\\
+	\indent top\textunderscore to\textunderscore bottom = image.copy()\\
+	\\
+	\indent for row in range(1, image\textunderscore row - 1):\\
+	\indent \indent for col in range(1, image\textunderscore col - 1):\\
+	\indent \indent \indent if top\textunderscore to\textunderscore bottom[row, col] == weak:\\
+	\\
+	\indent \indent \indent \indent if top\textunderscore to\textunderscore bottom[row, col + 1] == 255 or top\textunderscore to\textunderscore bottom[row, col - 1] == 255 or \\
+	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col] == 255 or \\
+	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col - 1] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col - 1] == 255 or\\
+	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col + 1] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col + 1] == 255: \\
+	\\
+	\indent \indent \indent \indent \indent top\textunderscore to\textunderscore bottom[row, col] = 255\\
+	\\
+	\indent \indent \indent \indent else:\\
+	\indent \indent \indent \indent \indent     top\textunderscore to\textunderscore bottom[row, col] = 0\\
+	\\
+	\indent bottom\textunderscore to\textunderscore top = image.copy()\\
+	\\
+	\indent for row in range(image\textunderscore row - 2, 1, -1):\\
+	\indent \indent for col in range(image\textunderscore col - 2, 1, -1):\\
+	\indent \indent \indent if bottom\textunderscore to\textunderscore top[row, col] == weak:\\
+	\\
+	\indent \indent \indent \indent if bottom\textunderscore to\textunderscore top[row, col + 1] == 255 or bottom\textunderscore to\textunderscore top[row, col - 1] == 255 or \\
+	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col] == 255 or\\
+	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col - 1] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col - 1] == 255 or\\
+	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col + 1] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col + 1] == 255:\\
+	\\
+	\indent \indent \indent \indent \indent bottom\textunderscore to\textunderscore top[row, col] = 255\\
+	\\
+	\indent \indent \indent \indent else:\\
+	\indent \indent \indent \indent \indent bottom\textunderscore to\textunderscore top[row, col] = 0\\
+	\\
+	\indent right\textunderscore to\textunderscore left = image.copy()\\
+	\\
+	\indent for row in range(1, image\textunderscore row - 1):\\
+	\indent \indent for col in range(image\textunderscore col - 2, 0, -1):\\
+	\indent \indent \indent if right\textunderscore to\textunderscore left[row, col] == weak:\\
+	\\
+	\indent \indent \indent \indent if right\textunderscore to\textunderscore left[row, col + 1] == 255 or right\textunderscore to\textunderscore left[row, col - 1] == 255 or \\
+	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col] == 255 or right\textunderscore to\textunderscore left[row + 1, col] == 255 or \\
+	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col - 1] == 255 or right\textunderscore to\textunderscore left[row + 1, col - 1] == 255 or \\
+	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col + 1] == 255 or right\textunderscore to\textunderscore left[row + 1, col + 1] == 255:\\
+	\\
+	\indent \indent \indent \indent \indent right\textunderscore to\textunderscore left[row, col] = 255\\
+	\indent \indent \indent \indent else:\\
+	\indent \indent \indent \indent \indent right\textunderscore to\textunderscore left[row, col] = 0\\
+	\\
+	\indent left\textunderscore to\textunderscore right = image.copy()\\
+	\\
+	\indent for row in range(image\textunderscore row - 2, 1, -1):\\
+	\indent \indent for col in range(1, image\textunderscore col - 2):\\
+	\indent \indent \indent if left\textunderscore to\textunderscore right[row, col] == weak:\\
+	\\
+	\indent \indent \indent \indent if left\textunderscore to\textunderscore right[row, col + 1] == 255 or left\textunderscore to\textunderscore right[row, col - 1] == 255 or \\
+	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col] == 255 or left\textunderscore to\textunderscore right[row + 1, col] == 255 or \\
+	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col - 1] == 255 or left\textunderscore to\textunderscore right[row + 1, col - 1] == 255 or \\
+	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col + 1] == 255 or left\textunderscore to\textunderscore right[row + 1, col + 1] == 255:\\
+	\indent \indent \indent \indent left\textunderscore to\textunderscore right[row, col] = 255\\
+	\indent \indent \indent \indent else:\\
+	\indent \indent \indent \indent \indent left\textunderscore to\textunderscore right[row, col] = 0\\
+	\\
+	\indent out\textunderscore img = top\textunderscore to\textunderscore bottom + bottom\textunderscore to\textunderscore top + right\textunderscore to\textunderscore left + left\textunderscore to\textunderscore right\\
+	\\
+	\indent for i in range(0,len(out\textunderscore img)):\\
+	\indent \indent for j in range(0,len(out\textunderscore img[i])):\\
+	\\
+	\indent \indent \indent if(out\textunderscore img[i,j]):\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = 255\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The Spatial Filtering, NMS Function and Gradient operations remain unchanged from the functions described in Lab 2.\\
+	
+	The Output for this functions, for this specific input is:\\
+	
+%	\begin{center}
+%		\noindent \includegraphics[scale=0.75]{s22o-def}\\
+%		Image 10: Output Image, Default Parameters\\
+%		
+%		\includegraphics[scale=0.75]{s22o-adj}\\
+%		Image 11: Output Image, T = 30\%, window size = 7 \\
+%		
+%	\end{center}
 
-	\subsection{Derivative Filters}
+	\subsection{Cartoon Effect}
+
+	The cartoon effect utilizes both functions described above to produce the effect. This is done by computing both the filters and setting the output image to the smoothed image. Finally, the image edge pixels, found by the edge image, are replaced by an averaging filter, only taking the neighbouring 8 pixels into the equation, and not the centre pixel.\\
 	
-	The Derivative Filter function selects a derivative kernel for a user and outputs it for the user. The selector is given by the user as an input integer between 0 and 3. It has four premade kernels, including:\\
+	The code below describes the following effect:\\
 	
-	\textbf{Central Difference}\\
-	
-	\begin{align*}
-	h_{x}(x,y) = \left[
-	\begin{matrix}
-	1 & 0 & -1
-	\end{matrix}
-	\right]
-	\end{align*}\\
-	
-	\textbf{Forward Difference}\\
-	
-	\begin{align*}
-	h_{x}(x,y) = \left[
-	\begin{matrix}
-	0 & 1 & -1
-	\end{matrix}
-	\right]
-	\end{align*}\\
-	
-	\textbf{Prewitt}\\
-	
-	\begin{align*}
-	h_{x}(x,y) = \left[
-	\begin{matrix}
-	1 & 0 & -1\\
-	2 & 0 & -2\\
-	1 & 0 & -1
-	\end{matrix}
-	\right]
-	\end{align*}
-	
-	\textbf{Sobel}\\
-	
-	\begin{align*}
-	h_{x}(x,y) = \left[
-	\begin{matrix}
-	1 & 0 & -1\\
-	2 & 0 & -2\\
-	1 & 0 & -1
-	\end{matrix}
-	\right]
-	\end{align*}
-	
-	The code for the derivative filter function is displayed below:\\
-	
-	\noindent def derivative\textunderscore kernel(select):\\
+	\noindent def cartoon\textunderscore effect(img, min\textunderscore window\textunderscore size, iteration, sigma = 0.33):\\
 	\\
-	\indent \# checks for boundary conditions\\
-	\indent select = int(select)\\
-	\indent if  select $>$ 3 or select $<$ 0:\\
-	\indent \indent return 0\\
+	\indent \# Generate the edge detect image\\
+	\indent img\textunderscore edge = extract\textunderscore edges(img, sigma = sigma)\\
 	\\
-	\indent \# selects operation\\
-	\indent if select == 0:\\
-	\indent \indent h = np.array([1, 0, -1])\\
+	\indent \# Generate the smoothing filter\\
+	\indent img\textunderscore blur = edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration)\\
 	\\
-	\indent elif select == 1:\\
-	\indent \indent h = np.array([0, 1, -1])\\
+	\indent out\textunderscore img = img\textunderscore blur\\
 	\\
-	\indent elif select == 2:\\
-	\indent \indent h = np.array([[1, 0, -1],\\
-	\indent \indent [1, 0, -1],\\
-	\indent \indent [1, 0, -1]])\\
+	\indent for i in range(1, len(img) - 1):\\
+	\indent \indent for j in range(1, len(img[i]) - 2):\\
 	\\
-	\indent else:\\
-	\indent \indent h = np.array([[1, 0, -1],\\
-	\indent \indent [2, 0, -2],\\
-	\indent \indent [1, 0, -1]])\\
+	\indent \indent \indent if(img\textunderscore edge[i, j] == 255):\\
 	\\
-	\indent return h\\
+	\indent \indent \indent \indent \# Calculate the average surrounding pixel intensities except the edge pixel\\
+	\indent \indent \indent \indent sum = np.sum(img[i-1:i+2, j-1:j+2])\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = (sum - img[i,j]) / 8\\
+	\\
+	\indent return out\textunderscore img\\
+
+	The output images are as follows for the input image and parameters:\\
+
+	\subsection{Cartoon Effect, XDOG Modificaiton}
 	
-	The images below represent the different kernels that were used when sent to the edge detector function above with the same input image, except the Sobel kernel as that was done before in the first test.\\
+	This effect is similar to the Cartoon Effect described above, however, the XDOG effect is applied to every pixel on the image if the mode is selected. This amplifies the cartoon effect and also adds more details to the photo as well after the smoothing function.\\
 	
-		\begin{center}
-		\noindent \includegraphics[scale=0.75]{s23o2}\\
-		Image 12: Output Image, Prewitt\\
-		
-	\end{center}
+	The code for the above explanation is as follows:\\
 	
-	\section{Analysis}
+	\noindent def cartoon\textunderscore effect(img, min\textunderscore window\textunderscore size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma\textunderscore x = 1, flag = 0):\\
+	\\
+	\indent img\textunderscore edge = extract\textunderscore edges(img, sigma = sigma)\\
+	\\
+	\indent img\textunderscore blur = edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration)\\
+	\\
+	\indent out\textunderscore img = img\textunderscore blur\\
+	\\
+	\indent \# Incorporation of the XDOG function\\
+	\indent if(flag == 1):\\
+	\indent \indent \#       Creation of the gaussian kernels\\
+	\indent \indent gauss\textunderscore 1 = gaussian\textunderscore kernel(sigma\textunderscore x, 2)\\
+	\indent \indent gauss\textunderscore 2 = gaussian\textunderscore kernel(k * sigma\textunderscore x, 2)\\
+	\\
+	\indent \indent gauss\textunderscore 1\textunderscore sum = np.sum(gauss\textunderscore 1)\\
+	\indent \indent gauss\textunderscore 2\textunderscore sum = np.sum(gauss\textunderscore 2)\\
+	\\
+	\indent \indent \# Both gaussian kernels are applied to the image\\
+	\indent \indent G1 = bf.spatial\textunderscore filter(img, gauss\textunderscore 1 / gauss\textunderscore 1\textunderscore sum)\\
+	\indent \indent G2 = bf.spatial\textunderscore filter(img, gauss\textunderscore 2 / gauss\textunderscore 2\textunderscore sum)\\
+	\\
+	\indent for i in range(1, len(img) - 1):\\
+	\indent \indent for j in range(1, len(img[i]) - 2):\\
+	\\
+	\indent \indent \indent if(img\textunderscore edge[i, j] == 255):\\
+	\\
+	\indent \indent \indent \indent \# Calculate the average surrounding pixel intensities except the edge pixel\\
+	\indent \indent \indent \indent sum = np.sum(img[i-1:i+2, j-1:j+2])\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] = (sum - img[i,j]) / 8\\
+	\\
+	\indent \indent \indent \# Implementing the XDOG function if the flag has been set\\
+	\indent \indent \indent if(flag == 1):\\
+	\indent \indent \indent \indent out\textunderscore img[i,j] += p * (G1[i,j] - G2[i,j])\\
+	\\
+	\indent return out\textunderscore img\\
 	
-	\begin{enumerate}
-		\item When a filter is completely separable, the kernel matrix is a called a rank 1. The rank of a matrix is the number of linear independent column or row vectors.\\ 
-		
-		Since the kernel is separable it means that the convolution operation can be performed by convoluting the vector kernels in a horizontal and vertical manner to emmulate the $N \times N$ matrix. This helps speed up the algorithm by doing less calculations as instead of doing, $N \times N$ operations per pixel, the computer is doing $N + N$ operations due to the amount of pixels being indexed.
-		
-		\item Applying the NMS filter with two seperate one-dimensional windows enables the horizontal and vertical edges to be better detected by the algorithm as the lines are compared with the changes in intensity in one direction only, as opposed to all directions.\\
-		
-		When computing the NMS with a two-dimensional filter, the image gradients are compared against the directional changes in all directions. Therefore the edges would be outlined, but they would not look as defined as they appear to be more segmented compared to the previous method described.\\
-		
-		\begin{center}
-			\noindent \includegraphics[scale=0.75]{s22o-2D}\\
-			Image 12: Edge Detection, 2D NMS Filter\\
-		\end{center}
-		
-		\item A pre-processing step before implementing the edge detection algorithm is by reducing the noise. As stated above in the implementation used in this lab, the image was subjected to a Gaussian filter to reduce the overall noise in the image, because small unwanted spikes in intensities could cause the filter to accidentally detect that discrepancy as part of an edge.\\
-		
-		The central and forward difference did not work in the spatial filter function, therefore there cannot be a comparison on the images. 
-		
-	\end{enumerate}
+	The output for the following function using the input image and the following parameters is as follows:\\
+	
+	
 	
 	\clearpage
 	
 	\section{References}
 	
-	[1] A. Jana, “Implement Canny edge detector using Python from scratch,” A Developer Diary, 20-May-2019. [Online]. Available: http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/. [Accessed: 18-Nov-2019].
+	[1] A. Jana, “Implement Canny edge detector using Python from scratch,” A Developer Diary, 20-May-2019. [Online]. Available: http://www.adeveloperdiary.com/data-science/computer-vision/implement-canny-edge-detector-using-python-from-scratch/. [Accessed: 16-Nov-2019].
 	
 \end{document}

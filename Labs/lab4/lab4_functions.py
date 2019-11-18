@@ -8,7 +8,6 @@ Created on Wed Nov  6 09:47:14 2019
 import cv2
 import numpy as np
 import basic_functions as bf
-import time
 
 def gaussian_kernel(sigma, r):
     
@@ -285,6 +284,9 @@ def extract_edges(img, sigma = 0.33):
             
             elif I_x[i,j] == 50 or I_y[i,j] == 50:
                 out_img[i,j] = 50
+            
+            elif(I_x[i,j] == 50 or I_y[i,j] == 255) or (I_x[i,j] == 255 or I_y[i,j] == 50):
+                out_img[i,j] = 50
     
     out_img = hysteresis(out_img)
     
@@ -292,6 +294,20 @@ def extract_edges(img, sigma = 0.33):
 
 
 def cartoon_effect(img, min_window_size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma_x = 1, flag = 0):
+    """
+    This function implements the cartoon effect filter
+    
+    This filter has two modes
+    Select them by either setting the value of the flag to
+    0 - Regular
+    1 - XDOG mode
+    
+    Regular mode takes the standard parameters and sigma(if needed) and uses 
+    the edge detector and the edge preserving smoothing filter.
+    
+    XDOG mode incorporates an XDOG filter in order to amplify the cartoon 
+    effect.
+    """
     
     img_edge = extract_edges(img, sigma = sigma)
     
@@ -316,12 +332,13 @@ def cartoon_effect(img, min_window_size, iteration, sigma = 0.33, k = 1.4, p = 1
         for j in range(1, len(img[i]) - 2):
             
             if(img_edge[i, j] == 255):
-                sum = np.sum(img[i-1:i+2, j-1:j+2])
                 
-                out_img[i,j] = sum / 9
+#                Calculate the average surrounding pixel intensities except the edge pixel
+                sum = np.sum(img[i-1:i+2, j-1:j+2])
+                out_img[i,j] = (sum - img[i,j]) / 8
 
 #            Implementing the XDOG function if the flag has been set
-            elif(flag == 1):
+            if(flag == 1):
                 out_img[i,j] += p * (G1[i,j] - G2[i,j])
                 
     return out_img
