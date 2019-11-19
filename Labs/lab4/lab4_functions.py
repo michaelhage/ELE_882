@@ -143,7 +143,7 @@ def edge_preserving(img, min_window_size, iteration):
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         
     for i in range(0, iteration):
-        out_img = cv2.medianBlur(out_img, min_window_size + 2 * i)
+        out_img = cv2.medianBlur(out_img, min_window_size - 2 * i)
     
     return out_img
 
