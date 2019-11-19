@@ -32,8 +32,8 @@ bf.display_multiple_images([img2, out_img2])
 
 # Problem 2
 
-cutoff = 150
-phi = 1.5
+cutoff = 130
+phi = 0.5
 
 # hard Thresholding
 out_img3 = fun.hard_threshold(out_img1, cutoff)
@@ -45,11 +45,11 @@ bf.display_multiple_images([img1, out_img4])
 
 
 # Problem 3
-cutoff = 150
+cutoff = 130
 phi = 0.5
 
 out_img5 = fun.three_tone(out_img1, cutoff, phi)
-bf.display_multiple_images([img1, out_img1, out_img5])
+bf.display_multiple_images([out_img1, out_img5])
 
 
 # Section 3.2

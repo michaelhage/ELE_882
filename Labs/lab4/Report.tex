@@ -302,7 +302,7 @@
 	
 	The edge detector's purpose is to discover the edges in a pleasant manner in order to implement it in the cartoon effect. \\
 	
-	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found by using equation 1, outlined above. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. There are two threshold values, that are known as the high and low threshold values. They are determined by the median value of the image and a user input value, that is defaulted to 0.33. The strong edges are any change in intensities that are greater than the high threshold value and the weak edge is any change that is between the two threshold values. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
+	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. There are two threshold values, that are known as the high and low threshold values. They are determined by the median value of the image and a user input value, that is defaulted to 0.33. The strong edges are any change in intensities that are greater than the high threshold value and the weak edge is any change that is between the two threshold values. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
 	
 	\noindent The code for the edge detector is shown below:\\
 	
@@ -480,7 +480,7 @@
 		
 	\end{center}
 
-	\subsection{Cartoon Effect}
+	\subsubsection{Cartoon Effect}
 
 	The cartoon effect utilizes both functions described above to produce the effect. This is done by computing both the filters and setting the output image to the smoothed image. Finally, the image edge pixels, found by the edge image, are replaced by an averaging filter, only taking the neighbouring 8 pixels into the equation, and not the centre pixel.\\
 	
@@ -516,7 +516,7 @@
 		
 	\end{center}
 	
-	\subsection{Cartoon Effect, XDOG Modificaiton}
+	\subsubsection{Cartoon Effect, XDOG Modificaiton}
 	
 	This effect is similar to the Cartoon Effect described above, however, the XDOG effect is applied to every pixel on the image if the mode is selected. This amplifies the cartoon effect and also adds more details to the photo as well after the smoothing function.\\
 	
