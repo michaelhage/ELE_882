@@ -2,13 +2,13 @@
 \usepackage[margin=0.75in]{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
-%\usepackage{pdfpages}
+\usepackage{pdfpages}
 
 \graphicspath{{./LatexImg/}}
 
 \begin{document}
 	
-	%\includepdf{CoverPage.pdf}
+	\includepdf{CoverPage.pdf}
 	
 	First and foremost, the programming language used to conduct this lab is Python 3.7, and the libraries primarily used are opencv2, numpy, and matplotlib. To view the cover page if it doesn't display properly, open \textbf{CoverPage.pdf} included in the folder provided.\\
 	
@@ -98,13 +98,16 @@
 		
 	These are the input and output images for various values of k, p, and $\sigma$:\\
 		
-	%\begin{center}
-	%	\noindent \includegraphics[scale=0.75]{lena}\\
-	%	Image 1: Input Image\\
+	\begin{center}
+		\noindent \includegraphics[scale=0.50]{lena}\\
+		Image 1: Input Image\\
 			
-	%	\includegraphics[scale=0.75]{s211o}\\
-	%	Image 2: Output Image\\
-	%\end{center}
+		\includegraphics[scale=0.50]{s311o1}\\
+		Image 2: Output Image 1, k = 2, $\sigma$ = 1, p = 0.5 \\
+		
+		\includegraphics[scale=0.50]{s311o2}\\
+		Image 3: Output Image 2, k = 2, $\sigma$ = 1, p = 2 \\
+	\end{center}
 
 	\subsubsection{Threshold}
 		
@@ -112,7 +115,7 @@
 		
 	\smallskip	
 	
-	\noindent \textbf{Soft Thresholding}\\
+	\noindent \textbf{Hard Thresholding}\\
 		
 	\noindent \# Produces binary threshold image\\
 	\noindent def hard\textunderscore threshold(img, cutoff):\\
@@ -126,16 +129,14 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-%	\begin{center}
-%		\noindent \includegraphics[scale=0.75]{nms-test}\\
-%		Image 3: Input Image\\
-%		
-%		\includegraphics[scale=0.75]{s212ox}\\
-%		Image 4: Output Image, Horizontal\\
-%		
-%		\includegraphics[scale=0.75]{s212oy}\\
-%		Image 5: Output Image, Vertical\\
-%	\end{center}
+	\begin{center}
+		
+		\includegraphics[scale=0.75]{s312o1}\\
+		Image 4: Using input Image 2, cutoff = 150\\
+	
+		\includegraphics[scale=0.75]{s312o2}\\
+		Image 5: Using input Image 3, cutoff = 150\\
+	\end{center}
 	
 	\smallskip
 	
@@ -153,18 +154,19 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-%	\begin{center}
-%		\noindent \includegraphics[scale=0.75]{nms-test}\\
-%		Image 3: Input Image\\
-%		
-%		\includegraphics[scale=0.75]{s212ox}\\
-%		Image 4: Output Image, Horizontal\\
-%		
-%		\includegraphics[scale=0.75]{s212oy}\\
-%		Image 5: Output Image, Vertical\\
-%	\end{center}
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{s312o3}\\
+		Image 6: Using input Image 2, cutoff = 150, $\phi$ = 1.5\\
+		
+		\includegraphics[scale=0.50]{s312o4}\\
+		Image 8: Using input Image 3, cutoff = 150, $\phi$ = 1.5\\
+		
+		\includegraphics[scale=0.50]{s312o5}\\
+		Image 9: Using input Image 2, cutoff = 120, $\phi$ = 0.05\\
+	\end{center}
 	
-	\subsection{Three-Tone Operator}
+	\subsubsection{Three-Tone Operator}
 	
 	For the three tone generator, the same method that was in the soft thresholding was applied to this operator. Instead of the hyperbolic tangent function being applied when the threshold wasn't exceeded, the function is applied globally. The code for the function is shown below:\\
 	
@@ -182,20 +184,89 @@
 	
 	Output images for the images produced in the XDOG filter above.\\
 	
-%	\begin{center}
-%		\noindent \includegraphics[scale=0.75]{nms-test}\\
-%		Image 3: Input Image\\
-%		
-%		\includegraphics[scale=0.75]{s212ox}\\
-%		Image 4: Output Image, Horizontal\\
-%		
-%		\includegraphics[scale=0.75]{s212oy}\\
-%		Image 5: Output Image, Vertical\\
-%	\end{center}
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{s313o1}\\
+		Image 10: Using input Image 2, cutoff = 150, $\phi$ = 0.5\\
+		
+		\includegraphics[scale=0.50]{s313o2}\\
+		Image 11: Using input Image 2, cutoff = 120, $\phi$ = 0.05\\
+
+	\end{center}
 	
 	\subsection{Oilify Filter}
 	
-	Need to add.
+	The oilify filter is an algorithm that makes the image appear to have been constructed like an oil painting.\\
+	
+	The first step to this is to partition a section of the image. Then in that partition, a local histogram and accumulative histogram are made. The accumulative histogram is the sum of every pixel value in that particular bin. Once that step is complete, the max value in the histogram is found, the most amount of pixel intensities occurring. Next, the following equation is computed:\\
+
+	\begin{equation}
+		I^{\prime}(x,y) = \frac{1}{K} \sum_{i=0}^{N-1}\left( \frac{h[i]}{h_{max}}\right) ^{\gamma} \frac{acc[i]}{h[i]}
+	\end{equation}\\
+	
+	\begin{equation}
+	K =  \sum_{i=0}^{N-1}\left( \frac{h[i]}{h_{max}}\right) ^{\gamma}
+	\end{equation}\\
+	
+	Note that when the value of h[i] is 0, the overall value is omitted from the summation to prevent arithmetic errors with dividing by zero.\\
+	
+	Finally, the image is iterated through until every pixel is iterated through. The code below represents the above algorithm:\\
+	
+	\noindent def oilify(img, R, gamma):\\
+	\\
+	\indent N = np.iinfo(img.dtype).max\\
+	\indent m,n = img.shape\\
+	\indent out = np.zeros\textunderscore like(img)\\
+	\\
+	\indent col\textunderscore right, col\textunderscore left = bf.padding\textunderscore param(R)\\
+	\indent row\textunderscore bottom, row\textunderscore top = bf.padding\textunderscore param(R)\\
+	\\
+	\indent img\textunderscore temp = np.array(np.zeros([m+row\textunderscore top+row\textunderscore bottom,n+col\textunderscore left+col\textunderscore right]), np.uint8)\\
+	\indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] = 1\\
+	\indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] *= img\\
+	\\
+	\indent h = np.zeros(N+1)\\
+	\indent acc = np.zeros(N+1)\\
+	\\
+	\indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
+	\indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
+	\\
+	\indent \indent \indent snap = img\textunderscore temp[i-row\textunderscore top: i+row\textunderscore bottom+1, j-col\textunderscore left: j+col\textunderscore right+1].copy()\\
+	\\
+	\indent \indent \indent h[:] = 0\\
+	\indent \indent \indent acc[:] = 0\\
+	\\
+	\indent \indent \indent for x in range(0,len(snap)):\\
+	\indent \indent \indent \indent for y in range(0,len(snap[x])):\\
+	\\
+	\indent \indent \indent \indent \indent h[snap[x][y]] += 1\\
+	\indent \indent \indent \indent \indent acc += snap[x][y]\\
+	\\
+	\indent \indent \indent h\textunderscore max = np.amax(h)\\
+	\indent \indent \indent A = 0 \\
+	\indent \indent \indent B = 0 \\
+	\\
+	\indent \indent \indent for k in range(0, N+1):\\
+	\indent \indent \indent \indent if(h[k] != 0):\\
+	\indent \indent \indent \indent \indent w = (h[k] / h\textunderscore max) ** gamma\\
+	\indent \indent \indent \indent \indent B += w\\
+	\indent \indent \indent \indent \indent A += w * (acc[k] / h[k])\\
+	\\
+	\indent \indent \indent out[i-row\textunderscore top][j-col\textunderscore left] = A / B\\
+	\\
+	\indent return np.array(out, np.uint8)\\
+	
+	The output image is as follows:\\
+	
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{lena}\\
+		Image 12: Input Image 
+		
+		\includegraphics[scale=0.50]{s32o}\\
+		Image 13: Output Image, R = 8, gamma = 2
+		
+	\end{center}
 	
 	\subsection{Cartoon Effect}
 	
@@ -218,19 +289,20 @@
 	
 	The filter produced the following output with the input provided below:\\
 	
-%	\begin{center}
-%		\noindent \includegraphics[scale=0.75]{lena}\\
-%		Image 1: Input Image\\
-%		
-%		\includegraphics[scale=0.75]{s211o}\\
-%		Image 2: Output Image\\
-%	\end{center}
+	\begin{center}
+		\includegraphics[scale=0.50]{lena}\\
+		Image 14: Input Image\\
+		
+		\includegraphics[scale=0.50]{s331o}\\
+		Image 15: Output Image, iterations = 3, minimum window size = 3\\
+		
+	\end{center}
 	
 	\subsubsection{Edge Detector}
 	
 	The edge detector's purpose is to discover the edges in a pleasant manner in order to implement it in the cartoon effect. \\
 	
-	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found by using equation 1, outlined above. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
+	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found by using equation 1, outlined above. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. There are two threshold values, that are known as the high and low threshold values. They are determined by the median value of the image and a user input value, that is defaulted to 0.33. The strong edges are any change in intensities that are greater than the high threshold value and the weak edge is any change that is between the two threshold values. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
 	
 	\noindent The code for the edge detector is shown below:\\
 	
@@ -399,16 +471,14 @@
 	
 	The Spatial Filtering, NMS Function and Gradient operations remain unchanged from the functions described in Lab 2.\\
 	
-	The Output for this functions, for this specific input is:\\
+	The output for this function, for the same input of the edge preserving function above is:\\
 	
-%	\begin{center}
-%		\noindent \includegraphics[scale=0.75]{s22o-def}\\
-%		Image 10: Output Image, Default Parameters\\
-%		
-%		\includegraphics[scale=0.75]{s22o-adj}\\
-%		Image 11: Output Image, T = 30\%, window size = 7 \\
-%		
-%	\end{center}
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{s332o}\\
+		Image 16: Output Image, $\sigma$ = 0.33\\
+		
+	\end{center}
 
 	\subsection{Cartoon Effect}
 
@@ -438,7 +508,14 @@
 	\indent return out\textunderscore img\\
 
 	The output images are as follows for the input image and parameters:\\
-
+	
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{s333o1}\\
+		Image 17: Output Image, minimum window size = 3, iterations = 3 ,$\sigma$ = 0.33\\
+		
+	\end{center}
+	
 	\subsection{Cartoon Effect, XDOG Modificaiton}
 	
 	This effect is similar to the Cartoon Effect described above, however, the XDOG effect is applied to every pixel on the image if the mode is selected. This amplifies the cartoon effect and also adds more details to the photo as well after the smoothing function.\\
@@ -483,7 +560,15 @@
 	
 	The output for the following function using the input image and the following parameters is as follows:\\
 	
-	
+	\begin{center}
+		
+		\includegraphics[scale=0.50]{s334o1}\\
+		Image 18: Output Image, minimum window size = 3, iterations = 3 ,$\sigma$ = 0.33, k = 3, p = 5, $\sigma_{x}$ = 1\\
+		
+		\includegraphics[scale=0.50]{s334o2}\\
+		Image 19: Output Image, minimum window size = 3, iterations = 3 ,$\sigma$ = 0.33, k = 6, p = 2, $\sigma_{x}$ = 1\\
+		
+	\end{center}
 	
 	\clearpage
 	
