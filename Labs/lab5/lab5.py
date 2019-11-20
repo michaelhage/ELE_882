@@ -15,8 +15,16 @@ img2 = cv2.imread(r"Images/4.1.02.tiff", 1)
 img3 = cv2.imread(r"Images/mandrill.png", 1)
 img4 = cv2.imread(r"Images/snowglobe_colour.png", 1)
 
+# Convert RGB -> HSI -> RGB
 out_img1 = fun.rgb_to_hsi(img1)
 
-out_img2 = fun.rgb_to_hsi(out_img1)
+out_img2 = fun.hsi_to_rgb(out_img1)
 
 bf.display_multiple_images([img1, out_img2])
+
+# Convert RGB -> YCbCr -> RGB
+out_img3 = fun.rgb_to_ycbcr(img1)
+
+out_img4 = fun.ycbcr_to_rgb(out_img3)
+
+bf.display_multiple_images([img1, out_img4])
