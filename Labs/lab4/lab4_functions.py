@@ -134,7 +134,7 @@ def oilify(img, R, gamma):
     return np.array(out, np.uint8)
 
 
-def edge_preserving(img, min_window_size, iteration):
+def edge_preserving(img, max_window_size, iteration):
     
     out_img = img.copy()
     
@@ -143,7 +143,7 @@ def edge_preserving(img, min_window_size, iteration):
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         
     for i in range(0, iteration):
-        out_img = cv2.medianBlur(out_img, min_window_size - 2 * i)
+        out_img = cv2.medianBlur(out_img, max_window_size - 2 * i)
     
     return out_img
 
@@ -293,7 +293,7 @@ def extract_edges(img, sigma = 0.33):
     return np.array(out_img, np.uint8)
 
 
-def cartoon_effect(img, min_window_size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma_x = 1, flag = 0):
+def cartoon_effect(img, max_window_size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma_x = 1, flag = 0):
     """
     This function implements the cartoon effect filter
     
@@ -311,7 +311,7 @@ def cartoon_effect(img, min_window_size, iteration, sigma = 0.33, k = 1.4, p = 1
     
     img_edge = extract_edges(img, sigma = sigma)
     
-    img_blur = edge_preserving(img, min_window_size, iteration)
+    img_blur = edge_preserving(img, max_window_size, iteration)
     
     out_img = img_blur
     

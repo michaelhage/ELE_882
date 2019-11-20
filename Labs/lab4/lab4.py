@@ -64,10 +64,10 @@ bf.display_multiple_images([img1, out_img6])
 
 # Problem 1
 
-min_window_size = 1
+max_window_size = 7
 iteration = 3
 
-out_img7 = fun.edge_preserving(img1, min_window_size, iteration)  
+out_img7 = fun.edge_preserving(img1, max_window_size, iteration)  
 bf.display_multiple_images([img1, out_img7])
 
 # Problem 2
@@ -80,11 +80,11 @@ bf.display_multiple_images([img1, out_img8])
 # Problem 3
 # Implement the Cartoon Effect
 
-min_window_size = 3
+max_window_size = 3
 iteration = 3
 sigma = 0.33
 
-out_img9 = fun.cartoon_effect(img1, min_window_size, iteration, sigma = sigma)
+out_img9 = fun.cartoon_effect(img1, max_window_size, iteration, sigma = sigma)
 bf.display_multiple_images([img1, out_img9])
 
 # Problem 4
