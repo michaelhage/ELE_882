@@ -28,3 +28,10 @@ out_img3 = fun.rgb_to_ycbcr(img1)
 out_img4 = fun.ycbcr_to_rgb(out_img3)
 
 bf.display_multiple_images([img1, out_img4])
+
+# Rotate Hue
+out_img1 = fun.rgb_to_hsi(img1)
+
+out_img5 = fun.change_hue(out_img1, np.pi)
+
+bf.display_multiple_images([img1, out_img5])

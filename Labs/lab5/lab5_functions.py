@@ -83,71 +83,116 @@ def hsi_to_rgb(img):
 
 def rgb_to_ycbcr(img):
     
-    out_img = np.array(img.copy(), np.double)
+#    out_img = np.array(img.copy(), np.double)
+#    
+#    r_arr = img[:,:,2]
+#    g_arr = img[:,:,1]
+#    b_arr = img[:,:,0]
+#    
+#    out_img = np.array(np.zeros_like(img), np.double)
+#    
+#    for i in range(0,len(img)):
+#        for j in range(0,len(img[i])):
+#            
+#            if(img.dtype == np.uint8):
+#            
+#                r = r_arr[i,j]
+#                g = g_arr[i,j]
+#                b = b_arr[i,j]
+#                
+#                out_img[i,j,0] = (0.299 * r) + (0.587 * g) + (0.114 * b)
+#                
+#                out_img[i,j,1] = (-0.1687 * r) - (0.3313 * g) + (0.5 * b) + 128
+#                
+#                out_img[i,j,2] = (0.5 * r) - (0.4187 * g) - (0.0813 * b) + 128
+#            
+#            
+#            elif(img.dtype == np.double):
+#                
+#                r = r_arr[i,j] 
+#                g = g_arr[i,j] 
+#                b = b_arr[i,j]
+#                
+#                out_img[i,j,0] = (0.299 * r) + (0.587 * g) + (0.114 * b)
+#                
+#                out_img[i,j,1] = (-0.1687 * r) - (0.3313 * g) + (0.5 * b)
+#                
+#                out_img[i,j,2] = (0.5 * r) - (0.4187 * g) - (0.0813 * b)
     
-    r_arr = img[:,:,2] / 255
-    g_arr = img[:,:,1] / 255
-    b_arr = img[:,:,0] / 255
+    m = np.array([ [0.299, -0.1687, 0.5],
+                   [0.587, -0.3313, -0.4187],
+                   [0.114, 0.5, -0.0813]])
     
-    out_img = np.zeros_like(img)
+    out_img = np.dot(img, m)
+    out_img[:,:,1:] += 128.0
     
-    for i in range(0,len(img)):
-        for j in range(0,len(img[i])):
-            
-            r = r_arr[i,j]
-            g = g_arr[i,j]
-            b = b_arr[i,j]
-            
-            if(img.dtype == np.uint8):
-                
-                out_img[i,j,0] = 0.299 * r + 0.587 * g + 0.114 * b
-                
-                out_img[i,j,1] = -0.1687 * r - 0.3313 * g + 0.5 * b + 128
-                
-                out_img[i,j,2] = 0.5 * r - 0.4187 * g - 0.0813 * b + 128
-            
-            
-            elif(img.dtype == np.double):
-                
-                out_img[i,j,0] = 0.299 * r + 0.587 * g + 0.114 * b
-                
-                out_img[i,j,1] = -0.1687 * r - 0.3313 * g + 0.5 * b
-                
-                out_img[i,j,2] = 0.5 * r - 0.4187 * g - 0.0813 * b
-    
-    return np.array(out_img, np.double)
+    return out_img
 
 
 def ycbcr_to_rgb(img):
    
-    out_img = np.zeros_like(img)
+#    out_img = np.array(np.zeros_like(img), np.double)
+#    
+#    Y_arr = img[:,:,0]
+#    Cb_arr = img[:,:,1]
+#    Cr_arr = img[:,:,2]
+#    
+#    for i in range(0,len(img)):
+#        for j in range(0,len(img[i])):
+#            
+#            y = Y_arr[i,j]
+#            cb = Cb_arr[i,j]
+#            cr = Cr_arr[i,j]
+#            
+#            if(img.dtype == np.uint8):
+#                
+#                out_img[i,j,2] = y +  1.402 * (cr - 128)
+#                
+#                out_img[i,j,1] = y - 0.34414 * (cb - 128) - 0.71414 * (cr - 128)
+#                
+#                out_img[i,j,0] = y + 1.772 * (cb - 128)
+#            
+#            
+#            elif(img.dtype == np.double):
+#                
+#                out_img[i,j,2] = y +  1.402 * cr
+#                
+#                out_img[i,j,1] = y - 0.34414 * cb - 0.71414 * cr
+#                
+#                out_img[i,j,0] = y + 1.772 * cb
     
-    Y_arr = img[:,:,0]
-    Cb_arr = img[:,:,1]
-    Cr_arr = img[:,:,2]
     
-    for i in range(0,len(img)):
-        for j in range(0,len(img[i])):
-            
-            y = Y_arr[i,j]
-            cb = Cb_arr[i,j]
-            cr = Cr_arr[i,j]
-            
-            if(img.dtype == np.uint8):
-                
-                out_img[i,j,0] = 1 * y +  0.114 * (cr - 128)
-                
-                out_img[i,j,1] = 1 * y - 0.34414 * (cb - 128) - 0.71414 * (cr - 128)
-                
-                out_img[i,j,2] = 1 * y - 1.772 * (cb - 128)
-            
-            
-            elif(img.dtype == np.double):
-                
-                out_img[i,j,0] = 1 * y +  0.114 * cr
-                
-                out_img[i,j,1] = 1 * y - 0.34414 * cb - 0.71414 * cr
-                
-                out_img[i,j,2] = 1 * y - 1.772 * cb
+    m = np.array([[1.0, 1.0, 1.0],
+                  [0, -0.34414, 1.772],
+                  [1.402, -0.71414, 0]])
+    
+    
+    out_img = np.dot(img, m)
+    
+#    Blue Channel -128 * 1.402 = -180.096
+    out_img[:,:,0] -= 180.096
+    
+#    Green Channel (-128 * -0.34414) + (-128 * -0.71414) = 135.459
+    out_img[:,:,1] += 135.459
+    
+#    Red Channel -128 * 1.772 = -226.816
+    out_img[:,:,2] -= 226.816
     
     return np.array(out_img, np.uint8)
+
+def change_hue(img, hue_angle):
+    """
+    This is a function that will rotate the hue of all values in an HSI image map.
+    
+    image: input color image that uses the HSI mapping
+    
+    hue_angle: input angle, in radians, that rotates the hue
+    
+    return: output image of rotated hue that uses BGR mapping
+    """
+    
+    img_temp = img.copy()
+    
+    img_temp[:,:,0] = (img[:,:,0] + hue_angle) % (2 * np.pi)
+    
+    return hsi_to_rgb(img_temp)
