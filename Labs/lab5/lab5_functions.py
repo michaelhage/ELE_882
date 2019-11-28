@@ -8,6 +8,7 @@ Created on Tue Nov 19 09:20:29 2019
 import numpy as np
 import basic_functions as bf
 import cv2
+import math
 
 def rgb_to_hsi(img):
     
@@ -31,7 +32,7 @@ def rgb_to_hsi(img):
             if np.isnan(a):
                 a = 0
             
-            out_img[i,j,0] = np.arccos( a )
+            out_img[i,j,0] = math.acos( a )
             
             if(b > g):
                 out_img[i,j,0] = 2 * np.pi - out_img[i,j,0]
@@ -65,7 +66,7 @@ def hsi_to_rgb(img):
                 
                 out_img[i,j,0] = I[i,j] * (1 - S[i,j])
                 
-                out_img[i,j,2] = I[i,j] * (1 + (S[i,j] * np.cos(H[i,j]) / np.cos((np.pi / 3) - H[i,j])) )
+                out_img[i,j,2] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j]) / math.cos((np.pi / 3) - H[i,j])) )
                 
                 out_img[i,j,1] = 3 * I[i,j] - (out_img[i,j,0] + out_img[i,j,2])
                 
@@ -73,7 +74,7 @@ def hsi_to_rgb(img):
                 
                 out_img[i,j,2] = I[i,j] * (1 - S[i,j])
                 
-                out_img[i,j,1] = I[i,j] * (1 + (S[i,j] * np.cos(H[i,j] - (2 * np.pi / 3)) ) / np.cos(np.pi - H[i,j]))
+                out_img[i,j,1] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j] - (2 * np.pi / 3)) ) / math.cos(np.pi - H[i,j]))
                 
                 out_img[i,j,0] = 3 * I[i,j] - (out_img[i,j,2] + out_img[i,j,1])
                 
@@ -81,7 +82,7 @@ def hsi_to_rgb(img):
                 
                 out_img[i,j,1] = I[i,j] * (1 - S[i,j])
                 
-                out_img[i,j,0] = I[i,j] * (1 + (S[i,j] * np.cos(H[i,j] - (4 * np.pi / 3))) / np.cos((5 * np.pi / 3) - H[i,j]))
+                out_img[i,j,0] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j] - (4 * np.pi / 3))) / math.cos((5 * np.pi / 3) - H[i,j]))
                 
                 out_img[i,j,2] = 3 * I[i,j] - (out_img[i,j,1] + out_img[i,j,0])
         
@@ -191,7 +192,7 @@ def change_hue(img, hue_angle):
     """
     This is a function that will rotate the hue of all values in an HSI image map.
     
-    image: input color image that uses the HSI mapping
+    image: input color image that uses the BGR mapping
     
     hue_angle: input angle, in radians, that rotates the hue
     
@@ -200,12 +201,66 @@ def change_hue(img, hue_angle):
     
     img_temp = img.copy()
     
-    img_temp[:,:,0] = (img[:,:,0] + hue_angle)
+    img_temp = rgb_to_hsi(img_temp)
     
-    for i in range(0, len(img)):
-        for j in range(0, len(img[i])):
-            
-            if(img_temp[i,j,0] >= 2 * np.pi):
-                img_temp[i,j,0] = img_temp[i,j,0] - 2 * np.pi
+    tau = 2 * np.pi
+    
+    img_temp[:,:,0] = (img_temp[:,:,0] + hue_angle) % tau
     
     return hsi_to_rgb(img_temp)
+
+def change_saturation(img, sat):
+    
+    img_temp = img.copy()
+    
+    img_temp = rgb_to_hsi(img_temp)
+    
+    img_temp[:,:,1] += sat
+    
+    img_temp[img_temp[:,:,1] > 1] = 1
+    img_temp[img_temp[:,:,1] < 0] = 0
+
+    return hsi_to_rgb(img_temp)
+
+def apply_point_tfrm(img, c, d):
+    
+    out_img = np.zeros_like(img)
+    
+    # this copies the image independent of the original image
+    r = img[:,:,2]
+    g = img[:,:,1]
+    b = img[:,:,0]
+
+    # iterates through the array
+    for i in range(len(img)):
+        for j in range(len(img[i])):
+
+            # applies the transformation
+            x = (c * b[i,j]) + d
+            y = (c * g[i,j]) + d
+            z = (c * r[i,j]) + d
+
+
+            # checks for bit overflow
+            if x > 255:
+                x = 255
+            elif x < 0:
+                x = 0
+            
+            if y > 255:
+                y = 255
+            elif y < 0:
+                y = 0
+            
+            if z > 255:
+                z = 255
+            elif z < 0:
+                z = 0
+
+            # applies the pixel value to the image
+            out_img[i,j,0] = x
+            out_img[i,j,1] = y
+            out_img[i,j,2] = z
+
+    return out_img
+    
