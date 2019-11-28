@@ -11,11 +11,12 @@ import cv2
 
 def rgb_to_hsi(img):
     
-    out_img = np.array(img.copy(), np.double)
+    img_temp = np.array(img.copy(), np.double)
+    out_img = np.array(np.zeros_like(img), np.double)
     
-    r_arr = img[:,:,2] / 255
-    g_arr = img[:,:,1] / 255
-    b_arr = img[:,:,0] / 255
+    r_arr = img_temp[:,:,2] / 255
+    g_arr = img_temp[:,:,1] / 255
+    b_arr = img_temp[:,:,0] / 255
     
     for i in range(0,len(img)):
         for j in range(0,len(img[i])):
@@ -27,15 +28,21 @@ def rgb_to_hsi(img):
 #            Hue
             a = (0.5 * ( (r - g) + (r - b) ) ) / np.sqrt( (r - g)**2 + (r - b ) * ( g - b ) )
             
+            if np.isnan(a):
+                a = 0
+            
             out_img[i,j,0] = np.arccos( a )
             
             if(b > g):
                 out_img[i,j,0] = 2 * np.pi - out_img[i,j,0]
             
 #            Saturation
-            c_min = np.min(img[i,j]) / 255
+            c_min = np.min([r, g, b])
             
-            out_img[i,j,1] = 1 - ( (3.0 / (r + g + b) ) * c_min)
+            if r+g+b == 0:
+                out_img[i,j,1] = 1
+            else:
+                out_img[i,j,1] = 1 - ( (3.0 / (r + g + b) ) * c_min)
             
 #            Intensity
             out_img[i,j,2] = (r + g + b) / 3
@@ -193,6 +200,12 @@ def change_hue(img, hue_angle):
     
     img_temp = img.copy()
     
-    img_temp[:,:,0] = (img[:,:,0] + hue_angle) % (2 * np.pi)
+    img_temp[:,:,0] = (img[:,:,0] + hue_angle)
+    
+    for i in range(0, len(img)):
+        for j in range(0, len(img[i])):
+            
+            if(img_temp[i,j,0] >= 2 * np.pi):
+                img_temp[i,j,0] = img_temp[i,j,0] - 2 * np.pi
     
     return hsi_to_rgb(img_temp)
