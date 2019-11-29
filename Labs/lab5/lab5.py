@@ -38,7 +38,7 @@ bf.display_multiple_images([img5, out_img5])
 
 # Offset Saturation
 
-out_img6 = fun.change_saturation(img5, 0.25)
+out_img6 = fun.change_saturation(img5, -0.1)
 
 bf.display_multiple_images([img5, out_img6])
 
@@ -46,3 +46,31 @@ bf.display_multiple_images([img5, out_img6])
 out_img7 = fun.apply_point_tfrm(img5, 2, -20)
 
 bf.display_multiple_images([img5, out_img7])
+
+# Colour Spatial Filter
+
+# Gaussian Kernel
+sigma = 1
+r = 2
+
+gauss, gauss_sum = fun.gaussian_kernel(sigma, r)
+out_img8 = fun.spatial_filter(img1, gauss / gauss_sum)
+
+bf.display_multiple_images([img1, out_img8])
+
+# Histogram Equalize
+
+out_img9 = fun.histogram_equalization_rgb(img1)
+
+bf.display_multiple_images([img1, out_img9])
+
+bf.display_color_histogram(img1)
+bf.display_color_histogram(out_img9)
+
+# Histogram Equalize YCbCr
+out_img10 = fun.histogram_equalization_ycbcr(img1)
+
+bf.display_multiple_images([img1, out_img10])
+
+bf.display_color_histogram(img1)
+bf.display_color_histogram(out_img10)

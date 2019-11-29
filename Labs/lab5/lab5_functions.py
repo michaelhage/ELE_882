@@ -10,6 +10,36 @@ import basic_functions as bf
 import cv2
 import math
 
+def padding_param(a):
+    
+    if a % 2 == 1:
+        m = int((a - 1)/ 2)
+        n = int(m)
+    
+    else:
+        m = int(a / 2)
+        n = int(m - 1)
+    
+    return m,n
+
+def gaussian_kernel(sigma, r):
+    
+    size = 2 * r + 1
+    
+    kernel = np.zeros([size, size])
+    
+    k = (2 * sigma**2)
+    k_pi = k / np.pi
+    
+    for i in range(0, size):
+        for j in range(0, size):
+            
+            kernel[i][j] = k_pi * np.exp( -( (i - r)**2 + (j - r)**2 ) / k )
+    
+    kernel = kernel / kernel[0][0]
+    
+    return np.array(kernel, np.uint8), np.sum(kernel)
+
 def rgb_to_hsi(img):
     
     img_temp = np.array(img.copy(), np.double)
@@ -91,42 +121,6 @@ def hsi_to_rgb(img):
 
 def rgb_to_ycbcr(img):
     
-#    out_img = np.array(img.copy(), np.double)
-#    
-#    r_arr = img[:,:,2]
-#    g_arr = img[:,:,1]
-#    b_arr = img[:,:,0]
-#    
-#    out_img = np.array(np.zeros_like(img), np.double)
-#    
-#    for i in range(0,len(img)):
-#        for j in range(0,len(img[i])):
-#            
-#            if(img.dtype == np.uint8):
-#            
-#                r = r_arr[i,j]
-#                g = g_arr[i,j]
-#                b = b_arr[i,j]
-#                
-#                out_img[i,j,0] = (0.299 * r) + (0.587 * g) + (0.114 * b)
-#                
-#                out_img[i,j,1] = (-0.1687 * r) - (0.3313 * g) + (0.5 * b) + 128
-#                
-#                out_img[i,j,2] = (0.5 * r) - (0.4187 * g) - (0.0813 * b) + 128
-#            
-#            
-#            elif(img.dtype == np.double):
-#                
-#                r = r_arr[i,j] 
-#                g = g_arr[i,j] 
-#                b = b_arr[i,j]
-#                
-#                out_img[i,j,0] = (0.299 * r) + (0.587 * g) + (0.114 * b)
-#                
-#                out_img[i,j,1] = (-0.1687 * r) - (0.3313 * g) + (0.5 * b)
-#                
-#                out_img[i,j,2] = (0.5 * r) - (0.4187 * g) - (0.0813 * b)
-    
     m = np.array([ [0.299, -0.1687, 0.5],
                    [0.587, -0.3313, -0.4187],
                    [0.114, 0.5, -0.0813]])
@@ -138,44 +132,18 @@ def rgb_to_ycbcr(img):
 
 
 def ycbcr_to_rgb(img):
-   
-#    out_img = np.array(np.zeros_like(img), np.double)
-#    
-#    Y_arr = img[:,:,0]
-#    Cb_arr = img[:,:,1]
-#    Cr_arr = img[:,:,2]
-#    
-#    for i in range(0,len(img)):
-#        for j in range(0,len(img[i])):
-#            
-#            y = Y_arr[i,j]
-#            cb = Cb_arr[i,j]
-#            cr = Cr_arr[i,j]
-#            
-#            if(img.dtype == np.uint8):
-#                
-#                out_img[i,j,2] = y +  1.402 * (cr - 128)
-#                
-#                out_img[i,j,1] = y - 0.34414 * (cb - 128) - 0.71414 * (cr - 128)
-#                
-#                out_img[i,j,0] = y + 1.772 * (cb - 128)
-#            
-#            
-#            elif(img.dtype == np.double):
-#                
-#                out_img[i,j,2] = y +  1.402 * cr
-#                
-#                out_img[i,j,1] = y - 0.34414 * cb - 0.71414 * cr
-#                
-#                out_img[i,j,0] = y + 1.772 * cb
-    
     
     m = np.array([[1.0, 1.0, 1.0],
                   [0, -0.34414, 1.772],
                   [1.402, -0.71414, 0]])
     
     
-    out_img = np.dot(img, m)
+    out_img = np.array(img.copy(), np.double)
+    
+    out_img = img.dot(m)
+    
+    
+#    These offsets are required because the values are stored into 8-bits
     
 #    Blue Channel -128 * 1.402 = -180.096
     out_img[:,:,0] -= 180.096
@@ -263,4 +231,134 @@ def apply_point_tfrm(img, c, d):
             out_img[i,j,2] = z
 
     return out_img
+
+
+def spatial_filter(img, W): 
     
+    if img.dtype != np.uint8:
+        return img
+    
+    a,b = W.shape
+    m,n,x = img.shape
+    
+    img_double = np.array(img.copy(), np.double)
+    out_img = np.zeros_like(img_double)
+    
+#    if filter kernel has size 1 by 1
+    if a == 1 and b == 1:
+        
+        return W*img_double
+    
+#    finding if column of kernel is odd or even and establishing the padding 
+#    parameters for the padded array
+    
+    col_right, col_left = padding_param(a)
+    row_bottom, row_top = padding_param(b)
+    for x in range(0,x):
+#        creating a padded array and an output for the convolution operation 
+        img_temp = np.zeros([m+row_top+row_bottom,n+col_left+col_right])
+        img_temp[row_top:m+row_top, col_left:n+col_left] = 1.0
+        
+        img_temp[row_top:m+row_top, col_left:n+col_left] *= img_double[:,:,x]
+        
+#        iterating over the length and width of the original size of the array
+        for i in range(row_top,m+row_top):
+            for j in range(col_left,n+col_left):
+                
+                sum = 0
+#                partioning a section the same size as the kernel for the 
+#                convoltion operation and then computing the convolution and
+#                storing it in the output array
+              
+                snap = img_temp[i-row_top: i+row_bottom+1, j-col_left: j+col_right+1].copy()
+                for l in range(0,len(W)):
+                    for k in range(0,len(W[l])):
+                        
+                        sum += snap[l,k] * W[l,k]
+                        
+                out_img[i-row_top,j-col_left,x] = sum
+                
+    return np.array(out_img, np.uint8)
+
+
+def histogram_equalization_rgb(img):
+    
+#    Check for unsigned integer 8-bit
+    if img.dtype != np.uint8:
+        return img
+    
+    out_img = img.copy()
+    MAX = np.iinfo(np.uint8).max
+    m,n,c = img.shape
+    
+#    Creates the histogram
+    his = np.zeros(MAX+1)
+    cdf = np.zeros(MAX+1)
+    
+    for x in range(0,c):
+        his[:] = 0
+        cdf[:] = 0
+        
+#        Calculate the histogram
+        for i in range(0, len(img)):
+            for j in range(0, len(img[i])):
+                
+                his[ img[i,j,x] ] += 1
+         
+#        Calculate the CDF    
+        cdf[0] = his[0]
+        
+        for i in range(1,len(cdf)):
+            cdf[i] = his[i] + cdf[i - 1]
+        
+        cdf = cdf / (m*n) * MAX
+        
+#        Apply the CDF
+        for i in range(0, len(img)):
+            for j in range(0, len(img[i])):
+                
+                out_img[i,j,x] = cdf[img[i,j,x]]
+    
+    return out_img
+
+
+def histogram_equalization_ycbcr(img):
+    
+#    Check for unsigned integer 8-bit
+    if img.dtype != np.uint8:
+        return img
+    
+    img_temp = rgb_to_ycbcr(img)
+    img_temp = np.array(img_temp, np.uint8)
+    
+    out_img = np.zeros_like(img)
+    MAX = np.iinfo(np.uint8).max
+    m,n,c = img.shape
+    
+#    Creates the histogram
+    his = np.zeros(MAX+1)
+    cdf = np.zeros(MAX+1)
+
+#    Calculate the histogram
+    for i in range(0, len(img)):
+        for j in range(0, len(img[i])):
+            
+            his[ img_temp[i,j,0] ] += 1
+     
+#    Calculate the CDF    
+    cdf[0] = his[0]
+    
+    for i in range(1,MAX+1):
+        cdf[i] = his[i] + cdf[i - 1]
+    
+    cdf = cdf / (m*n*c) * MAX
+    
+#    Apply the CDF
+    for i in range(0, len(img)):
+        for j in range(0, len(img[i])):
+            
+            out_img[i,j,0] = cdf[img_temp[i,j,0]]
+    
+    out_img = ycbcr_to_rgb(out_img)
+    
+    return out_img
