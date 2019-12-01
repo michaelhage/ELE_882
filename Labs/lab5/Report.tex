@@ -128,421 +128,179 @@
 	
 	\subsection{YUV}
 	
+	The YUV colour space is similar to the HSI colour space in which it transforms a colour space through a function. For this lab, the vector space used is the RGB space and the YUV variant is the JPEG $\textrm{Y}^\prime$CbCr.\\
 	
+	The YUV colour space uses three channels, but the channels are split into two categories, Luma, ($\textrm{Y}^\prime$) and Chroma (Cb and Cr). Luma is the apparent brightness of the image, or in the case of grayscale, is the intensity of the image. Chroma represents the colour information of the image. The Cb and Cr channels are the blue-difference and red-difference chroma components, respectively.\\
+	
+	Considering an RGB colour vector $\vec{c}$,\\
+	
+		\begin{align}
+			y &= \begin{bmatrix}
+			r \\
+			g \\
+			g
+			\end{bmatrix},
+		\end{align}
+	
+	we apply the following linear transformations on the RGB colour space to convert to the $\textrm{Y}^\prime$ CbCr space.\\
+	
+	\begin{align}
+		\begin{bmatrix}
+			Y^\prime \\
+			Cb \\
+			Cr
+			\end{bmatrix}
+			= 	
+		\begin{bmatrix}
+			0.299 & 0.587 & 0.114\\
+			-0.1687 & -0.3313 & 0.5\\
+			0.5 & -0.4187 & -0.0813
+		\end{bmatrix}
+		%
+		\begin{bmatrix}
+		r \\
+		g \\
+		b
+		\end{bmatrix}
+		+
+		\begin{bmatrix}
+		0 \\
+		128 \\
+		128
+		\end{bmatrix}
+	\end{align}
+	
+	This is a linear transformation by stretching the RGB cube by rotating, scaling and translating it in a Cartesian space, transforming it into a new cube. Since this is a linear transformation, multiplying by the inverse transformation matrix.\\
+	
+	\begin{align}
+		\begin{bmatrix}
+			r \\
+			g \\
+			b
+		\end{bmatrix}
+		= 	
+		\begin{bmatrix}
+			1 & 0 & 1.402\\
+			1 & -0.34414 & -0.71414\\
+			1 & 1.772 & 0
+		\end{bmatrix}
+		%
+		\left(
+			\begin{bmatrix}
+				Y^\prime \\
+				Cb \\
+				Cr
+			\end{bmatrix}
+			-
+			\begin{bmatrix}
+				0 \\
+				128 \\
+				128
+			\end{bmatrix}
+		\right)
+	\end{align} 
+	
+	If the image is of type double, and the RGB or $\textrm{Y}^\prime$CbCr values are between 0 and 1, then the offsets are not needed. These equations are exactly the same except for the offset values. These matrices transformation are shown below.\\
+	
+	\begin{align}
+		\begin{bmatrix}
+			Y^\prime \\
+			Cb \\
+			Cr
+		\end{bmatrix}
+		= 	
+		\begin{bmatrix}
+			0.299 & 0.587 & 0.114\\
+			-0.1687 & -0.3313 & 0.5\\
+			0.5 & -0.4187 & -0.0813
+		\end{bmatrix}
+		%
+		\begin{bmatrix}
+			r \\
+			g \\
+			b
+		\end{bmatrix}
+	\end{align}
+	
+	\begin{align}
+		\begin{bmatrix}
+			r \\
+			g \\
+			b
+		\end{bmatrix}
+		= 	
+		\begin{bmatrix}
+			1 & 0 & 1.402\\
+			1 & -0.34414 & -0.71414\\
+			1 & 1.772 & 0
+		\end{bmatrix}
+		%
+		\begin{bmatrix}
+			Y^\prime \\
+			Cb \\
+			Cr
+		\end{bmatrix}
+	\end{align} 
 	
 	\section{Assignment}
 	
-	\subsection{XDOG}
+	\subsection{Colour Space Conversion}
 	
-	\subsubsection{XDOG Kernel}
+	\subsubsection{RGB to HSI}
 	
-	The eXtended Difference of Gaussians filter implementation follows the same guidelines as equation 1 and 2 and the descriptions above. The following filter is strictly a grayscale filter and any coloured images are converted at the beginning the code below.\\
-		
-	\noindent \# eXtended Difference of Gaussian\\
-	\noindent def XDOG(img, k, sigma, p):\\
-	\\
-	\indent img\textunderscore temp = img.copy()\\
-	\\
-	\indent \#    Check for RGB image, if so then convert to grayscale\\
-	\indent if img\textunderscore temp.ndim == 3:\\
-	\indent \indent img\textunderscore temp = cv2.cvtColor(img\textunderscore temp, cv2.COLOR\textunderscore BGR2GRAY)\\
-	\\
-	\indent img\textunderscore temp = np.array(img\textunderscore temp, np.double)\\
-	\\
-	\indent \#    Creation of the gaussian kernels\\
-	\indent gauss\textunderscore 1 = gaussian\textunderscore kernel(sigma, 2)\\		\indent gauss\textunderscore 2 = gaussian\textunderscore kernel(k * sigma, 2)\\
-	\\
-	\indent gauss\textunderscore 1\textunderscore sum = np.sum(gauss\textunderscore 1)\\
-	\indent gauss\textunderscore 2\textunderscore sum = np.sum(gauss\textunderscore 2)\\
-	\\
-	\indent \#    Both gaussian kernels are applied to the image\\
-	\indent G1 = bf.spatial\textunderscore filter(img\textunderscore temp, \indent gauss\textunderscore 1 / gauss\textunderscore 1\textunderscore sum)\\
-	\indent G2 = bf.spatial\textunderscore filter(img\textunderscore temp, \indent gauss\textunderscore 2 / gauss\textunderscore 2\textunderscore sum)\\
-	\\
-	\indent \#    Difference of Gaussian Computation\\
-	\indent img\textunderscore temp[:,:] = (1 + p) * G1[:,:] - p * G2[:,:]\\
-	\\
-	\indent return np.array(img\textunderscore temp, np.uint8)\\
-		
-	These are the input and output images for various values of k, p, and $\sigma$:\\
+	This is an implementation of the function described in equations 5 through 9. This implementation divides each pixel channel value by 255 to ensure each value is between 0 and 1, and converts the output image to type double.
 
-	\subsubsection{Threshold}
+	\subsubsection{HSI to RGB}
 		
-	The hard and soft threshold functions found in equations 3 and 4 are implemented below. The images below differ from the equations described above as they are not binary images, but images that range across the unsigned 8-bit spectrum.\\
-		
-	\smallskip	
+	This is an implementation of the method described in equations 10 through 18 to convert the image from the HSI colour space to RGB channels. This implementation was done with conditional statements to emulate the colour regions.\\
 	
-	\noindent \textbf{Hard Thresholding}\\
-		
-	\noindent \# Produces binary threshold image\\
-	\noindent def hard\textunderscore threshold(img, cutoff):\\
-	\\
-	\indent out = np.zeros\textunderscore like(img)\\
-	\\
-	\indent \# applies the max value to the intensities greater than the cutoff\\
-	\indent out[img $>$ cutoff] = 255\\
-	\\	
-	\indent return out\\
+	\subsubsection{RGB to $\textrm{Y}^\prime$CbCr}
 	
-	Output images for the images produced in the XDOG filter above.\\
+	This function converts the RGB colour space to a $\textrm{Y}^\prime$CbCr colour space. This is done through a transformation matrix operator shown in equation 20 and 22 for unsigned 8-bit integer and double respectively.\\
 	
-	\textbf{Soft Threshold}\\
+	\subsubsection{$\textrm{Y}^\prime$CbCr to RGB}
 	
-	\noindent \# Implements a soft thresholding function\\
-	def soft\textunderscore thereshold(img, cutoff, phi):\\
-	\\
-	\indent out = np.array(np.ones\textunderscore like(img), np.double)\\
-	\\
-	\indent \# apply the threshold function\\
-	\indent out[img <= cutoff] = 1 + np.tanh(phi * (img[i][j]) - cutoff)\\
-	\\
-	\indent return np.array( out * 255, np.uint8)\\
+	This function is the inverse of the function described above where it converts $\textrm{Y}^\prime$CbCr to a RGB colour space. As mentioned above there are two conversions, one for unsigned char and the other for double shown in equations 21 and 23 respectively.\\
 	
-	Output images for the images produced in the XDOG filter above.\\
 	
-	\subsubsection{Three-Tone Operator}
 	
-	For the three tone generator, the same method that was in the soft thresholding was applied to this operator. Instead of the hyperbolic tangent function being applied when the threshold wasn't exceeded, the function is applied globally. The code for the function is shown below:\\
+	\subsection{Colour Processing}
 	
-	\noindent \# Three tone generator\\
-	\noindent def three\textunderscore tone(img, cutoff, phi):\\
-	\\
-	\indent out = np.array(np.ones\textunderscore like (img), np.double)\\
-	\\
-	\indent for i in range(0, len(img)):\\
-	\indent \indent for j in range(0, len(img[i])):\\
-	\\
-	\indent \indent \indent out[i][j] = 1 + np.tanh(phi * (img[i][j] - cutoff) )\\
-	\\
-	\indent return np.array( (out * 127) + 1, np.uint8)\\
 	
-	Output images for the images produced in the XDOG filter above.\\
+	\subsubsection{Change Hue}
 	
-	\subsection{Oilify Filter}
+	This function rotates the vector around the hue to manipulate the colours of every pixel found in the photo, instead of adjusting their individual RGB channels. This function converts the RGB image to a HSI model, then adds the input value to the Hue, and finally converts the image back to the RGB channel. This allows for a much easier and smoother transformation of colour than RGB operations.\\
 	
-	The oilify filter is an algorithm that makes the image appear to have been constructed like an oil painting.\\
+	\subsubsection{Change Saturation}
 	
-	The first step to this is to partition a section of the image. Then in that partition, a local histogram and accumulative histogram are made. The accumulative histogram is the sum of every pixel value in that particular bin. Once that step is complete, the max value in the histogram is found, the most amount of pixel intensities occurring. Next, the following equation is computed:\\
-	
-	Note that when the value of h[i] is 0, the overall value is omitted from the summation to prevent arithmetic errors with dividing by zero.\\
-	
-	Finally, the image is iterated through until every pixel is iterated through. The code below represents the above algorithm:\\
-	
-	\noindent def oilify(img, R, gamma):\\
-	\\
-	\indent N = np.iinfo(img.dtype).max\\
-	\indent m,n = img.shape\\
-	\indent out = np.zeros\textunderscore like(img)\\
-	\\
-	\indent col\textunderscore right, col\textunderscore left = bf.padding\textunderscore param(R)\\
-	\indent row\textunderscore bottom, row\textunderscore top = bf.padding\textunderscore param(R)\\
-	\\
-	\indent img\textunderscore temp = np.array(np.zeros([m+row\textunderscore top+row\textunderscore bottom,n+col\textunderscore left+col\textunderscore right]), np.uint8)\\
-	\indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] = 1\\
-	\indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] *= img\\
-	\\
-	\indent h = np.zeros(N+1)\\
-	\indent acc = np.zeros(N+1)\\
-	\\
-	\indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
-	\indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
-	\\
-	\indent \indent \indent snap = img\textunderscore temp[i-row\textunderscore top: i+row\textunderscore bottom+1, j-col\textunderscore left: j+col\textunderscore right+1].copy()\\
-	\\
-	\indent \indent \indent h[:] = 0\\
-	\indent \indent \indent acc[:] = 0\\
-	\\
-	\indent \indent \indent for x in range(0,len(snap)):\\
-	\indent \indent \indent \indent for y in range(0,len(snap[x])):\\
-	\\
-	\indent \indent \indent \indent \indent h[snap[x][y]] += 1\\
-	\indent \indent \indent \indent \indent acc += snap[x][y]\\
-	\\
-	\indent \indent \indent h\textunderscore max = np.amax(h)\\
-	\indent \indent \indent A = 0 \\
-	\indent \indent \indent B = 0 \\
-	\\
-	\indent \indent \indent for k in range(0, N+1):\\
-	\indent \indent \indent \indent if(h[k] != 0):\\
-	\indent \indent \indent \indent \indent w = (h[k] / h\textunderscore max) ** gamma\\
-	\indent \indent \indent \indent \indent B += w\\
-	\indent \indent \indent \indent \indent A += w * (acc[k] / h[k])\\
-	\\
-	\indent \indent \indent out[i-row\textunderscore top][j-col\textunderscore left] = A / B\\
-	\\
-	\indent return np.array(out, np.uint8)\\
-	
-	The output image is as follows:\\
-	
-	\subsection{Cartoon Effect}
-	
-	\subsubsection{Edge Preserving, Smoothing Area Filter}
-	
-	This filter was implemented to smooth out the image, to produce a cartoon blur effect while preserving the edges. This filter was achieved by using a median filter and expanding the dimensions of the kernel every iteration. This function allows the edges to be preserved as the median filter will not filter out strong edges due to the complete difference in intensities between both sides of the edge. Consequently, it allows the overall image to be smoothed out as a whole, achieving the desired effect.\\
-	
-	\noindent def edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration):\\
-	\\
-	\indent out\textunderscore img = img.copy()\\
-	\\
-	\indent \#     Check for RGB image, if so then convert to grayscale\\
-	\indent if out\textunderscore img.ndim == 3:   \\      
-	\indent \indent out\textunderscore img = cv2.cvtColor(out\textunderscore img, cv2.COLOR\textunderscore BGR2GRAY)\\
-	\\
-	\indent for i in range(0, iteration):\\
-	\indent \indent out\textunderscore img = cv2.medianBlur(out\textunderscore img, min\textunderscore window\textunderscore size + 2 * i)\\
-	\\
-	\indent return out\textunderscore img\\
-	
-	The filter produced the following output with the input provided below:\\
-	
-	\subsubsection{Edge Detector}
-	
-	The edge detector's purpose is to discover the edges in a pleasant manner in order to implement it in the cartoon effect. \\
-	
-	The first stage of the edge detection is to remove the noise on the image whilst preserving the edges, which is done by using a Gaussian filter. Next, the second step in the filter is to use the spatial filter with the kernel and a transposed matrix based of it to produce the horizontal and vertical gradients of the image. The filter used in this investigation is the Sobel filter. Afterwards, the magnitude of the image gradients is found. Furthermore, the magnitude is put through the NMS filter to produce two images that outline the possible edges of the original image. Next, both those images are put into the threshold function to discern the strong edges from the weak ones by assigning two different intensity values if it is a weak or strong edge. There are two threshold values, that are known as the high and low threshold values. They are determined by the median value of the image and a user input value, that is defaulted to 0.33. The strong edges are any change in intensities that are greater than the high threshold value and the weak edge is any change that is between the two threshold values. Next, the combination of the two images through an iterative loop looks for similarities between the two images by equating both images pixel by pixel to compare if both values are the same and if they are then the output of the function is the value of both of the image pixel intensities. The final step, Hysteresis, involves connecting the weak edges to the strong edges to show a more consistent tone. This is done by iterating through the image 4 times every direction. The algorithm will use the weak edge pixel and look at all 8 neighbouring pixels for a strong edge and replace the existing pixel with a strong pixel intensity (max value) if it finds a surrounding pixel. Each of the four direction matrices are then summed into a new matrix. The matrix is then put into a comparator to see if any of the values of the four matrices are strong edges, and sets the final image to a strong edge at that particular pixel.\\
-	
-	\noindent The code for the edge detector is shown below:\\
-	
-	\noindent \textbf{Edge Extract Main}
-	
-	\smallskip
-	
-	\noindent def extract\textunderscore edges(img, sigma = 0.33):\\
-	\\
-	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
-	\\
-	\indent \# Parameter for auto thresholding\\
-	\indent med = np.median(img)\\
-	\\
-	\indent \# High and Low Auto Threshold Values\\
-	\indent lo\textunderscore thresh = int(max(0, (1.0 - sigma) * med))\\
-	\indent hi\textunderscore thresh = int(min(255, (1.0 + sigma) * med))\\
-	\\
-	\indent \# Sobel Filter\\
-	\indent H = np.array([[1, 0, -1],\\
-	\indent \indent [2, 0, -2],\\
-	\indent \indent [1, 0, -1]])\\
-	\\
-	\indent \# Transposed Sobel\\
-	\indent H\textunderscore t = np.transpose(H)\\
-	\\
-	\indent \# Gaussian Kernel\\
-	\indent gauss = gaussian\textunderscore kernel(1, 2)\\
-	\indent gauss\textunderscore sum = np.sum(gauss)\\
-	\\
-	\indent \# Noise Reduction Step, Gaussian Blur\\
-	\indent img\textunderscore temp = bf.spatial\textunderscore filter(img, gauss / gauss\textunderscore sum)\\
-	\\
-	\indent I\textunderscore x = bf.spatial\textunderscore filter(img\textunderscore temp, H)\\
-	\indent I\textunderscore y = bf.spatial\textunderscore filter(img\textunderscore temp, H\textunderscore t)\\
-	\\
-	\indent \# Compute gradient magnitude\\
-	\indent I = np.sqrt(I\textunderscore x**2 + I\textunderscore y**2)\\
-	\\
-	\indent \# Suppressing low fluctuations in intensities\\
-	\indent I\textunderscore x, I\textunderscore y = bf.non\textunderscore max\textunderscore suppress(I, 5, 5)\\
-	\\
-	\indent I\textunderscore x = threshold(I\textunderscore x, hi\textunderscore thresh, lo\textunderscore thresh)\\
-	\indent I\textunderscore y = threshold(I\textunderscore y, hi\textunderscore thresh, lo\textunderscore thresh)\\
-	\\
-	\indent for i in range(0,len(I\textunderscore x)):\\
-	\indent \indent for j in range(0, len(I\textunderscore x[i])):\\
-	\\
-	\indent \indent \indent if I\textunderscore x[i,j] == 255 or I\textunderscore y[i,j] == 255:\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = 255\\
-	\\
-	\indent \indent \indent elif I\textunderscore x[i,j] == 50 or I\textunderscore y[i,j] == 50:\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = 50\\
-	\\
-	\indent \indent \indent elif(I\textunderscore x[i,j] == 50 or I\textunderscore y[i,j] == 255) or (I\textunderscore x[i,j] == 255 or I\textunderscore y[i,j] == 50):\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = 50\\
-	\\
-	\indent out\textunderscore img = hysteresis(out\textunderscore img)\\
-	\\
-	\indent return np.array(out\textunderscore img, np.uint8)\\
-	
-	\smallskip
-	
-	\noindent \textbf{Thresholding}
-	
-	\smallskip
-	
-	\noindent def threshold(img, hi, lo):\\
-	\\
-	\indent \# Values for strong and weak edges\\
-	\indent high = 255\\
-	\indent low = 50\\
-	\\
-	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
-	\\
-	\indent strong\textunderscore x, strong\textunderscore y = np.where(img $geq$ hi)\\
-	\indent weak\textunderscore x, weak\textunderscore y = np.where((img $\leq$ hi) and (img $\geq$ lo))\\
-	\\
-	\indent out\textunderscore img[strong\textunderscore x, strong\textunderscore y] = high\\
-	\indent out\textunderscore img[weak\textunderscore x, weak\textunderscore y] = low\\
-	\\
-	\indent return np.array(out\textunderscore img, np.uint8)\\
-	
-	\smallskip
-	
-	\textbf{Hysteresis}
-	
-	This function below was influenced greatly by Abhisek Jana's implementation[1] of this function.\\
-	
-	\noindent def hysteresis(image):\\
-	\\
-	\indent weak = 50\\
-	\\
-	\indent image\textunderscore row, image\textunderscore col = image.shape\\
-	\\
-	\indent top\textunderscore to\textunderscore bottom = image.copy()\\
-	\\
-	\indent for row in range(1, image\textunderscore row - 1):\\
-	\indent \indent for col in range(1, image\textunderscore col - 1):\\
-	\indent \indent \indent if top\textunderscore to\textunderscore bottom[row, col] == weak:\\
-	\\
-	\indent \indent \indent \indent if top\textunderscore to\textunderscore bottom[row, col + 1] == 255 or top\textunderscore to\textunderscore bottom[row, col - 1] == 255 or \\
-	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col] == 255 or \\
-	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col - 1] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col - 1] == 255 or\\
-	\indent \indent \indent \indent   top\textunderscore to\textunderscore bottom[row - 1, col + 1] == 255 or top\textunderscore to\textunderscore bottom[row + 1, col + 1] == 255: \\
-	\\
-	\indent \indent \indent \indent \indent top\textunderscore to\textunderscore bottom[row, col] = 255\\
-	\\
-	\indent \indent \indent \indent else:\\
-	\indent \indent \indent \indent \indent     top\textunderscore to\textunderscore bottom[row, col] = 0\\
-	\\
-	\indent bottom\textunderscore to\textunderscore top = image.copy()\\
-	\\
-	\indent for row in range(image\textunderscore row - 2, 1, -1):\\
-	\indent \indent for col in range(image\textunderscore col - 2, 1, -1):\\
-	\indent \indent \indent if bottom\textunderscore to\textunderscore top[row, col] == weak:\\
-	\\
-	\indent \indent \indent \indent if bottom\textunderscore to\textunderscore top[row, col + 1] == 255 or bottom\textunderscore to\textunderscore top[row, col - 1] == 255 or \\
-	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col] == 255 or\\
-	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col - 1] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col - 1] == 255 or\\
-	\indent \indent \indent \indent   bottom\textunderscore to\textunderscore top[row - 1, col + 1] == 255 or bottom\textunderscore to\textunderscore top[row + 1, col + 1] == 255:\\
-	\\
-	\indent \indent \indent \indent \indent bottom\textunderscore to\textunderscore top[row, col] = 255\\
-	\\
-	\indent \indent \indent \indent else:\\
-	\indent \indent \indent \indent \indent bottom\textunderscore to\textunderscore top[row, col] = 0\\
-	\\
-	\indent right\textunderscore to\textunderscore left = image.copy()\\
-	\\
-	\indent for row in range(1, image\textunderscore row - 1):\\
-	\indent \indent for col in range(image\textunderscore col - 2, 0, -1):\\
-	\indent \indent \indent if right\textunderscore to\textunderscore left[row, col] == weak:\\
-	\\
-	\indent \indent \indent \indent if right\textunderscore to\textunderscore left[row, col + 1] == 255 or right\textunderscore to\textunderscore left[row, col - 1] == 255 or \\
-	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col] == 255 or right\textunderscore to\textunderscore left[row + 1, col] == 255 or \\
-	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col - 1] == 255 or right\textunderscore to\textunderscore left[row + 1, col - 1] == 255 or \\
-	\indent \indent \indent \indent   right\textunderscore to\textunderscore left[row - 1, col + 1] == 255 or right\textunderscore to\textunderscore left[row + 1, col + 1] == 255:\\
-	\\
-	\indent \indent \indent \indent \indent right\textunderscore to\textunderscore left[row, col] = 255\\
-	\indent \indent \indent \indent else:\\
-	\indent \indent \indent \indent \indent right\textunderscore to\textunderscore left[row, col] = 0\\
-	\\
-	\indent left\textunderscore to\textunderscore right = image.copy()\\
-	\\
-	\indent for row in range(image\textunderscore row - 2, 1, -1):\\
-	\indent \indent for col in range(1, image\textunderscore col - 2):\\
-	\indent \indent \indent if left\textunderscore to\textunderscore right[row, col] == weak:\\
-	\\
-	\indent \indent \indent \indent if left\textunderscore to\textunderscore right[row, col + 1] == 255 or left\textunderscore to\textunderscore right[row, col - 1] == 255 or \\
-	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col] == 255 or left\textunderscore to\textunderscore right[row + 1, col] == 255 or \\
-	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col - 1] == 255 or left\textunderscore to\textunderscore right[row + 1, col - 1] == 255 or \\
-	\indent \indent \indent \indent   left\textunderscore to\textunderscore right[row - 1, col + 1] == 255 or left\textunderscore to\textunderscore right[row + 1, col + 1] == 255:\\
-	\indent \indent \indent \indent left\textunderscore to\textunderscore right[row, col] = 255\\
-	\indent \indent \indent \indent else:\\
-	\indent \indent \indent \indent \indent left\textunderscore to\textunderscore right[row, col] = 0\\
-	\\
-	\indent out\textunderscore img = top\textunderscore to\textunderscore bottom + bottom\textunderscore to\textunderscore top + right\textunderscore to\textunderscore left + left\textunderscore to\textunderscore right\\
-	\\
-	\indent for i in range(0,len(out\textunderscore img)):\\
-	\indent \indent for j in range(0,len(out\textunderscore img[i])):\\
-	\\
-	\indent \indent \indent if(out\textunderscore img[i,j]):\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = 255\\
-	\\
-	\indent return out\textunderscore img\\
-	
-	The Spatial Filtering, NMS Function and Gradient operations remain unchanged from the functions described in Lab 2.\\
-	
-	The output for this function, for the same input of the edge preserving function above is:\\
+	This function adjusts the richness of an image by adjusting the Saturation value of an HSI colour image. Firstly, this function converts the RGB image to an HSI colour space, the increases of decreases the Saturation value to every pixel, and then converts the value back to a RGB colour image.\\
 
-	\subsubsection{Cartoon Effect}
+	\subsubsection{Point Transform}
 
-	The cartoon effect utilizes both functions described above to produce the effect. This is done by computing both the filters and setting the output image to the smoothed image. Finally, the image edge pixels, found by the edge image, are replaced by an averaging filter, only taking the neighbouring 8 pixels into the equation, and not the centre pixel.\\
+	The Point Transform function from Lab 1 was modified to apply the transformation to each channel individually. This was done by iterating through the image three times, by changing the channel each iteration and using the original function.\\
 	
-	The code below describes the following effect:\\
+	\subsubsection{Spatial Filter}
 	
-	\noindent def cartoon\textunderscore effect(img, min\textunderscore window\textunderscore size, iteration, sigma = 0.33):\\
-	\\
-	\indent \# Generate the edge detect image\\
-	\indent img\textunderscore edge = extract\textunderscore edges(img, sigma = sigma)\\
-	\\
-	\indent \# Generate the smoothing filter\\
-	\indent img\textunderscore blur = edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration)\\
-	\\
-	\indent out\textunderscore img = img\textunderscore blur\\
-	\\
-	\indent for i in range(1, len(img) - 1):\\
-	\indent \indent for j in range(1, len(img[i]) - 2):\\
-	\\
-	\indent \indent \indent if(img\textunderscore edge[i, j] == 255):\\
-	\\
-	\indent \indent \indent \indent \# Calculate the average surrounding pixel intensities except the edge pixel\\
-	\indent \indent \indent \indent sum = np.sum(img[i-1:i+2, j-1:j+2])\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = (sum - img[i,j]) / 8\\
-	\\
-	\indent return out\textunderscore img\\
-
-	The output images are as follows for the input image and parameters:\\
+	The spatial filter function from Lab 2 was modified in a similar manner to the Point Transform function above. Each channel was iterated through individually while applying the transform.\\
 	
-	\subsubsection{Cartoon Effect, XDOG Modificaiton}
+	\subsubsection{Histogram Equalization - RGB}
 	
-	This effect is similar to the Cartoon Effect described above, however, the XDOG effect is applied to every pixel on the image if the mode is selected. This amplifies the cartoon effect and also adds more details to the photo as well after the smoothing function.\\
+	The Histogram Equalization function is a modified version of the one done in Lab 3 that accepts RGB coloured images and applies the same methodology as the functions above, by iterating over the image three times while changing the channel of operation each time.\\
 	
-	The code for the above explanation is as follows:\\
+	\subsubsection{Histogram Equalization - $\textrm{Y}^\prime$CbCr}
 	
-	\noindent def cartoon\textunderscore effect(img, min\textunderscore window\textunderscore size, iteration, sigma = 0.33, k = 1.4, p = 1, sigma\textunderscore x = 1, flag = 0):\\
-	\\
-	\indent img\textunderscore edge = extract\textunderscore edges(img, sigma = sigma)\\
-	\\
-	\indent img\textunderscore blur = edge\textunderscore preserving(img, min\textunderscore window\textunderscore size, iteration)\\
-	\\
-	\indent out\textunderscore img = img\textunderscore blur\\
-	\\
-	\indent \# Incorporation of the XDOG function\\
-	\indent if(flag == 1):\\
-	\indent \indent \#       Creation of the gaussian kernels\\
-	\indent \indent gauss\textunderscore 1 = gaussian\textunderscore kernel(sigma\textunderscore x, 2)\\
-	\indent \indent gauss\textunderscore 2 = gaussian\textunderscore kernel(k * sigma\textunderscore x, 2)\\
-	\\
-	\indent \indent gauss\textunderscore 1\textunderscore sum = np.sum(gauss\textunderscore 1)\\
-	\indent \indent gauss\textunderscore 2\textunderscore sum = np.sum(gauss\textunderscore 2)\\
-	\\
-	\indent \indent \# Both gaussian kernels are applied to the image\\
-	\indent \indent G1 = bf.spatial\textunderscore filter(img, gauss\textunderscore 1 / gauss\textunderscore 1\textunderscore sum)\\
-	\indent \indent G2 = bf.spatial\textunderscore filter(img, gauss\textunderscore 2 / gauss\textunderscore 2\textunderscore sum)\\
-	\\
-	\indent for i in range(1, len(img) - 1):\\
-	\indent \indent for j in range(1, len(img[i]) - 2):\\
-	\\
-	\indent \indent \indent if(img\textunderscore edge[i, j] == 255):\\
-	\\
-	\indent \indent \indent \indent \# Calculate the average surrounding pixel intensities except the edge pixel\\
-	\indent \indent \indent \indent sum = np.sum(img[i-1:i+2, j-1:j+2])\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] = (sum - img[i,j]) / 8\\
-	\\
-	\indent \indent \indent \# Implementing the XDOG function if the flag has been set\\
-	\indent \indent \indent if(flag == 1):\\
-	\indent \indent \indent \indent out\textunderscore img[i,j] += p * (G1[i,j] - G2[i,j])\\
-	\\
-	\indent return out\textunderscore img\\
-	
-	The output for the following function using the input image and the following parameters is as follows:\\
+	This function is similar to the one described above, however the function is only applied to the Luma channel instead of all the channels. This is the exact implementation of the one used in Lab 3 as adjusting the Luma channel is the same as adjusting the intensity on a grayscale image.\\
 	
 	\section{Analysis}
+	
+	\begin{enumerate}
+		\item Applying the effect to each channel individually does work in certain scenarios, however, since the RGB values aren't directly linked to the colour balance of the image, adjusting those values through histogram equalization may yield drastic or unwanted changes. Applying the operation to the Luma channel, is similar to adjusting the overall brightness of a grayscale image, and thus would adjust the overall brightness of the image while retaining the original colour detail.
+		
+		\item Since Histogram Equalization is about adjusting the brightness of the overall image, then using the $\textrm{Y}^\prime$CbCr colour space is a more logical choice than the HSI model due to the $\textrm{Y}^\prime$CbCr having an independent colour channel, Luma, which determines the individual brightness of the image. The Intensity channel is not independent of the colour channels as it does not factor in the human eye's bias towards the colour green and treats each intensity as equals as shown in equation 9.
+		
+		\item When modifying the colour properties of an image, the HSI model is more descriptive when defining the colour of a pixel due to it having two easily identifiable colour channels as opposed to the CbCr channels. Rotating the Hue and adjusting the saturation are directly linked to each colour in the colour space. The CbCr channels do not directly adjust the colour in a simple manner like the HSI model due to the information stored in the channels being more complicated.
+		
+		\item Run the edge detector from Lab 2 across the three channels to produce three edge images for each colour. Then, use the inclusive or operator to combine the three edge maps like the gradient x and y maps for each of the individual channels.
+	\end{enumerate}
 	
 \end{document}

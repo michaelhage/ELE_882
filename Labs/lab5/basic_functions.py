@@ -13,15 +13,22 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def display_histogram(img):
+    plt.ion()
+    
     plt.hist(img.ravel(), 256, [0, 256])
     plt.show()
 
 def display_color_histogram(img):
     
+    plt.ion()
+    plt.rcParams['interactive'] == True
+    
     color = ('b','g','r')
     for i,col in enumerate(color):
+        plt.subplot(3,1,i+1)
         plt.hist(img[:,:,i].ravel(), 256, [0, 256], color = col)
-        plt.show()
+    
+    plt.show()
     
 #def display_individual_histograms(img):
 #    i=0

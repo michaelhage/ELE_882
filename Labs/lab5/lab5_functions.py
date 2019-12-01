@@ -140,8 +140,7 @@ def ycbcr_to_rgb(img):
     
     out_img = np.array(img.copy(), np.double)
     
-    out_img = img.dot(m)
-    
+    out_img = img.dot(m) 
     
 #    These offsets are required because the values are stored into 8-bits
     
@@ -331,8 +330,9 @@ def histogram_equalization_ycbcr(img):
     img_temp = rgb_to_ycbcr(img)
     img_temp = np.array(img_temp, np.uint8)
     
-    out_img = np.zeros_like(img)
-    MAX = np.iinfo(np.uint8).max
+    
+    out_img = img_temp.copy()
+    MAX = 255
     m,n,c = img.shape
     
 #    Creates the histogram
@@ -351,7 +351,7 @@ def histogram_equalization_ycbcr(img):
     for i in range(1,MAX+1):
         cdf[i] = his[i] + cdf[i - 1]
     
-    cdf = cdf / (m*n*c) * MAX
+    cdf = cdf / (m*n) * MAX
     
 #    Apply the CDF
     for i in range(0, len(img)):
@@ -359,6 +359,8 @@ def histogram_equalization_ycbcr(img):
             
             out_img[i,j,0] = cdf[img_temp[i,j,0]]
     
-    out_img = ycbcr_to_rgb(out_img)
+    
+    
+    out_img = ycbcr_to_rgb(np.uint8(out_img))
     
     return out_img
