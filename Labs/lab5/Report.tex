@@ -246,23 +246,121 @@
 	
 	\subsection{Colour Space Conversion}
 	
+	\textbf{Note}: There are not any test images for this section as the code just converts the image to a new colour space and then inverts the operation. The test code attached will show that the functions both work and can convert the image to a new colour space and then revert it back to the original colour space.
+	
 	\subsubsection{RGB to HSI}
 	
-	This is an implementation of the function described in equations 5 through 9. This implementation divides each pixel channel value by 255 to ensure each value is between 0 and 1, and converts the output image to type double.
+	This is an implementation of the function described in equations 5 through 9. This implementation divides each pixel channel value by 255 to ensure each value is between 0 and 1, and converts the output image to type double. The below code describes the equations shown above:\\
+	
+	\noindent def rgb\textunderscore to\textunderscore hsi(img):\\
+	\\
+	\indent img\textunderscore temp = np.array(img.copy(), np.double)\\
+	\indent out\textunderscore img = np.array(np.zeros\textunderscore like(img), np.double)\\
+	\\
+	\indent r\textunderscore arr = img\textunderscore temp[:,:,2] / 255\\
+	\indent g\textunderscore arr = img\textunderscore temp[:,:,1] / 255\\
+	\indent b\textunderscore arr = img\textunderscore temp[:,:,0] / 255\\
+	\\
+	\indent for i in range(0,len(img)):\\
+	\indent \indent for j in range(0,len(img[i])):\\
+	\\
+	\indent \indent \indent r = r\textunderscore arr[i,j]\\
+	\indent \indent \indent g = g\textunderscore arr[i,j]\\
+	\indent \indent \indent	b = b\textunderscore arr[i,j]\\
+	\\
+	\indent \indent \indent \# Hue\\
+	\indent \indent \indent a = (0.5 * ( (r - g) + (r - b) ) ) / np.sqrt( (r - g)**2 + (r - b ) * ( g - b ) )\\
+	\\
+	\indent \indent \indent if np.isnan(a):\\
+	\indent \indent \indent \indent a = 0\\
+	\\
+	\indent \indent \indent out\textunderscore img[i,j,0] = math.acos( a )\\
+	\\
+	\indent \indent \indent if(b $>$ g):\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,0] = 2 * np.pi - out\textunderscore img[i,j,0]\\
+	\\
+	\indent \indent \indent \# Saturation\\
+	\indent \indent \indent	c\textunderscore min = np.min([r, g, b])\\
+	\\
+	\indent \indent \indent if r+g+b == 0:\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,1] = 1\\
+	\indent \indent \indent else:\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,1] = 1 - ( (3.0 / (r + g + b) ) * c\textunderscore min)\\
+	\\
+	\indent \indent \indent \# Intensity\\
+	\indent \indent \indent out\textunderscore img[i,j,2] = (r + g + b) / 3\\
+	\\
+	\indent return np.array(out\textunderscore img, np.double)
 
 	\subsubsection{HSI to RGB}
 		
-	This is an implementation of the method described in equations 10 through 18 to convert the image from the HSI colour space to RGB channels. This implementation was done with conditional statements to emulate the colour regions.\\
+	This is an implementation of the method described in equations 10 through 18 to convert the image from the HSI colour space to RGB channels. This implementation was done with conditional statements to emulate the colour regions. The code below describes the inverse HSI transformation described above:\\
+	
+	\noindent def hsi\textunderscore to\textunderscore rgb(img):\\
+	\\
+	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
+	\\
+	\indent H = img[:,:,0]\\
+	\indent S = img[:,:,1]\\
+	\indent I = img[:,:,2]\\
+	\\
+	\indent for i in range(0,len(img)):\\
+	\indent \indent for j in range(0,len(img[i])):\\
+	\\
+	\indent \indent \indent if 0 $\leq$ H[i,j] $<$ (2 * np.pi / 3):\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,0] = I[i,j] * (1 - S[i,j])\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,2] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j]) / math.cos((np.pi / 3) - H[i,j])) )\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,1] = 3 * I[i,j] - (out\textunderscore img[i,j,0] + out\textunderscore img[i,j,2])\\
+	\\
+	\indent \indent \indent elif (2 * np.pi / 3) $\leq$ H[i,j] $<$ (4 * np.pi / 3):\\
+	\\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,2] = I[i,j] * (1 - S[i,j])\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,1] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j] - (2 * np.pi / 3)) ) / math.cos(np.pi - H[i,j]))\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,0] = 3 * I[i,j] - (out\textunderscore img[i,j,2] + out\textunderscore img[i,j,1])\\
+	\\
+	\indent \indent \indent elif (4 * np.pi / 3) $\leq$ H[i,j] $<$ 2 * np.pi:\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,1] = I[i,j] * (1 - S[i,j])\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,0] = I[i,j] * (1 + (S[i,j] * math.cos(H[i,j] - (4 * np.pi / 3))) / math.cos((5 * np.pi / 3) - H[i,j]))\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i,j,2] = 3 * I[i,j] - (out\textunderscore img[i,j,1] + out\textunderscore img[i,j,0])\\
+	\\
+	\indent return np.array(out\textunderscore img * 255, np.uint8)
 	
 	\subsubsection{RGB to $\textrm{Y}^\prime$CbCr}
 	
-	This function converts the RGB colour space to a $\textrm{Y}^\prime$CbCr colour space. This is done through a transformation matrix operator shown in equation 20 and 22 for unsigned 8-bit integer and double respectively.\\
+	This function converts the RGB colour space to a $\textrm{Y}^\prime$CbCr colour space. This is done through a transformation matrix operator shown in equation 20 and 22 for unsigned 8-bit integer and double respectively. The code below describes the linear transformation matrix operation:\\
+	
+	\noindent def rgb\textunderscore to\textunderscore ycbcr(img):\\
+	\\
+	\indent m = np.array([ [0.299, -0.1687, 0.5],\\
+	\indent \indent \indent \indent \indent \indent [0.587, -0.3313, -0.4187],\\
+	\indent \indent \indent \indent \indent \indent[0.114, 0.5, -0.0813]])\\
+	\\
+	\indent out\textunderscore img = np.dot(img, m)\\
+	\indent out\textunderscore img[:,:,1:] += 128.0\\
+	\\
+	\indent return out\textunderscore img
 	
 	\subsubsection{$\textrm{Y}^\prime$CbCr to RGB}
 	
-	This function is the inverse of the function described above where it converts $\textrm{Y}^\prime$CbCr to a RGB colour space. As mentioned above there are two conversions, one for unsigned char and the other for double shown in equations 21 and 23 respectively.\\
+	This function is the inverse of the function described above where it converts $\textrm{Y}^\prime$CbCr to a RGB colour space. As mentioned above there are two conversions, one for unsigned char and the other for double shown in equations 21 and 23 respectively. The code below describes the inverse matrix transformation:\\
 	
-	
+	\noindent def ycbcr\textunderscore to\textunderscore rgb(img):\\
+	\\
+	\indent m = np.array([[1.0, 1.0, 1.0],\\
+	\indent \indent \indent \indent \indent [0, -0.34414, 1.772],\\
+	\indent \indent \indent \indent \indent [1.402, -0.71414, 0]])\\
+	\\
+	\indent	out\textunderscore img = np.array(img.copy(), np.double)\\
+	\\
+	\indent	out\textunderscore img = img.dot(m)
 	
 	\subsection{Colour Processing}
 	
@@ -271,25 +369,282 @@
 	
 	This function rotates the vector around the hue to manipulate the colours of every pixel found in the photo, instead of adjusting their individual RGB channels. This function converts the RGB image to a HSI model, then adds the input value to the Hue, and finally converts the image back to the RGB channel. This allows for a much easier and smoother transformation of colour than RGB operations.\\
 	
+	Code below:\\
+	
+	\noindent img\textunderscore temp = img.copy()\\
+	\\
+	\indent img\textunderscore temp = rgb\textunderscore to\textunderscore hsi(img\textunderscore temp)\\
+	\\
+	\indent tau = 2 * np.pi\\
+	\\
+	\indent img\textunderscore temp[:,:,0] = (img\textunderscore temp[:,:,0] + hue\textunderscore angle) \% tau\\
+	\\
+	\indent return hsi\textunderscore to\textunderscore rgb(img\textunderscore temp)\\
+	
+	The rotate hue function takes the Peppers input image and rotates the hues by predetermined colours. The background is the main tell that the image colour rotation works as the background changes from one uniform colour to another. Some peppers also change colours, from green to orange in the first picture to blue and purple in the next. There are some saturation problems causing the image to produce certain inconsistencies as that is due to the Intensities of those areas causing inverse transformation back to RGB some errors in the conversion process.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=.5]{pep}\\
+		Image 2: Input Image\\
+		
+		\noindent \includegraphics[scale=0.5]{s321o1}\\
+		Image 3: Output Image, rotation of $\frac{\pi}{6}$\\
+		
+		\noindent \includegraphics[scale=.5]{s321o2}\\
+		Image 5: Output Image, rotation of $\pi$\\
+	\end{center}
+	
 	\subsubsection{Change Saturation}
 	
 	This function adjusts the richness of an image by adjusting the Saturation value of an HSI colour image. Firstly, this function converts the RGB image to an HSI colour space, the increases of decreases the Saturation value to every pixel, and then converts the value back to a RGB colour image.\\
-
+	
+	Code below:\\
+	
+	\noindent def change\textunderscore saturation(img, sat):\\
+	\\
+	\indent img\textunderscore temp = img.copy()\\
+	\\
+	\indent img\textunderscore temp = rgb\textunderscore to\textunderscore hsi(img\textunderscore temp)\\
+	\\
+	\indent img\textunderscore temp[:,:,1] += sat\\
+	\\
+	\indent img\textunderscore temp[img\textunderscore temp[:,:,1] $>$ 1] = 1\\
+	\indent img\textunderscore temp[img\textunderscore temp[:,:,1] $<$ 0] = 0\\
+	
+	The saturation of the input image used in the previous function was adjusted to produce the output image below. The overall intensities of the colours were lowered creating a calmer expression on the image as the colours aren't as bright. There are also black spots as the conversion has issues with certain values and they aren't accounted for, such as all zero values.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=.5]{s322o1}\\
+		Image 6: Output Image, Saturation Offset of -0.1\\
+	\end{center}
+	
 	\subsubsection{Point Transform}
 
 	The Point Transform function from Lab 1 was modified to apply the transformation to each channel individually. This was done by iterating through the image three times, by changing the channel each iteration and using the original function.\\
+	
+	Code below:\\
+	
+	\noindent def apply\textunderscore point\textunderscore tfrm(img, c, d):\\
+	\\
+	\indent out\textunderscore img = np.zeros\textunderscore like(img)\\
+	\\
+	\indent \# this copies the image independent of the original image\\
+	\indent r = img[:,:,2]\\
+	\indent g = img[:,:,1]\\
+	\indent b = img[:,:,0]\\
+	\\
+	\indent \# iterates through the array\\
+	\indent for i in range(len(img)):\\
+	\indent \indent for j in range(len(img[i])):\\
+	\\
+	\indent \indent \indent \# applies the transformation\\
+	\indent \indent \indent x = (c * b[i,j]) + d\\
+	\indent \indent \indent y = (c * g[i,j]) + d\\
+	\indent \indent \indent z = (c * r[i,j]) + d\\
+	\\
+	\indent \indent \indent \# checks for bit overflow\\
+	\indent \indent \indent if x $>$ 255:\\
+	\indent \indent \indent \indent x = 255\\
+	\indent \indent \indent elif x $<$ 0:\\
+	\indent \indent \indent \indent x = 0\\
+	\\
+	\indent \indent \indent if y $>$ 255:\\
+	\indent \indent \indent \indent y = 255\\
+	\indent \indent \indent elif y $<$ 0:\\
+	\indent \indent \indent \indent y = 0\\
+	\\
+	\indent \indent \indent if z $>$ 255:\\
+	\indent \indent \indent \indent z = 255\\
+	\indent \indent \indent elif z $<$ 0:\\
+	\indent \indent \indent \indent z = 0\\
+	\\
+	\indent \indent \indent \# applies the pixel value to the image\\
+	\indent \indent \indent out\textunderscore img[i,j,0] = x\\
+	\indent \indent \indent out\textunderscore img[i,j,1] = y\\
+	\indent \indent \indent out\textunderscore img[i,j,2] = z\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The point transform function below is able to adjust the brightness of the image by using the operation above. However, the adjustment of the brightness, as explained with how the human eye works, doesn't have a 1:1 ratio with the coefficients and the transform itself as the human eye puts more emphasis on the green aspect of the coloured image.\\
+	
+	\begin{center}
+		
+		\noindent \includegraphics[scale=0.5]{s323o1}\\
+		Image 7: Output Image, c = 2, b = -20\\
+		
+		\noindent \includegraphics[scale=.5]{s323o2}\\
+		Image 8: Output Image, c = 1, b = -50\\
+	\end{center}
 	
 	\subsubsection{Spatial Filter}
 	
 	The spatial filter function from Lab 2 was modified in a similar manner to the Point Transform function above. Each channel was iterated through individually while applying the transform.\\
 	
+	Code below:\\
+	
+	\noindent def spatial\textunderscore filter(img, W): \\
+	\\ 
+	\indent if img.dtype != np.uint8:\\
+	\indent \indent return img\\
+	\\
+	\indent a,b = W.shape\\
+	\indent m,n,x = img.shape\\
+	\\
+	\indent img\textunderscore double = np.array(img.copy(), np.double)\\
+	\indent out\textunderscore img = np.zeros\textunderscore like(img\textunderscore double)\\
+	\\
+	\indent \# if filter kernel has size 1 by 1\\
+	\indent if a == 1 and b == 1:\\
+	\\
+	\indent \indent return W*img\textunderscore double\\
+	\\
+	\indent \# finding if column of kernel is odd or even and establishing the padding \\
+	\indent \# parameters for the padded array\\
+	\\
+	\indent col\textunderscore right, col\textunderscore left = padding\textunderscore param(a)\\
+	\indent row\textunderscore bottom, row\textunderscore top = padding\textunderscore param(b)\\
+	\indent for x in range(0,x):\\
+	\indent \indent \# creating a padded array and an output for the convolution operation \\
+	\indent \indent img\textunderscore temp = np.zeros([m+row\textunderscore top+row\textunderscore bottom,n+col\textunderscore left+col\textunderscore right])\\
+	\indent \indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] = 1.0\\
+	\\
+	\indent \indent img\textunderscore temp[row\textunderscore top:m+row\textunderscore top, col\textunderscore left:n+col\textunderscore left] *= img\textunderscore double[:,:,x]\\
+	\\
+	\indent \indent \# iterating over the length and width of the original size of the array\\
+	\indent \indent for i in range(row\textunderscore top,m+row\textunderscore top):\\
+	\indent \indent \indent for j in range(col\textunderscore left,n+col\textunderscore left):\\
+	\\
+	\indent \indent \indent \indent sum = 0\\
+	\indent \indent \indent \indent \# partitioning a section the same size as the kernel for the \\
+	\indent \indent \indent \indent \# convolution operation and then computing the convolution and\\
+	\indent \indent \indent \indent \# storing it in the output array\\
+	\\
+	\indent \indent \indent \indent snap = img\textunderscore temp[i-row\textunderscore top: i+row\textunderscore bottom+1, j-col\textunderscore left: j+col\textunderscore right+1].copy()\\
+	\indent \indent \indent \indent for l in range(0,len(W)):\\
+	\indent \indent \indent \indent \indent for k in range(0,len(W[l])):\\
+	\\
+	\indent \indent \indent \indent \indent \indent sum += snap[l,k] * W[k,l]\\
+	\\
+	\indent \indent \indent \indent out\textunderscore img[i-row\textunderscore top,j-col\textunderscore left,x] = sum\\
+	\\
+	\indent return np.array(out\textunderscore img, np.uint8)\\
+	
+	The spatial filter uses the Lenna input image below to produce a gaussian filtered output image shown in Image 10. The image is much more blurry than its counterpart.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.5]{Lenna}\\
+		Image 9: Input Image\\
+		
+		\noindent \includegraphics[scale=.5]{s324o1}\\
+		Image 10: Output Image, Gaussian Filter, r = 2, $\sigma$ = 1\\
+	\end{center}
+	
 	\subsubsection{Histogram Equalization - RGB}
 	
 	The Histogram Equalization function is a modified version of the one done in Lab 3 that accepts RGB coloured images and applies the same methodology as the functions above, by iterating over the image three times while changing the channel of operation each time.\\
 	
+	Code below:\\
+	
+	\noindent def histogram\textunderscore equalization\textunderscore rgb(img):\\
+	\\
+	\indent \# Check for unsigned integer 8-bit\\
+	\indent if img.dtype != np.uint8:\\
+	\indent \indent return img\\
+	\\
+	\indent out\textunderscore img = img.copy()\\
+	\indent MAX = np.iinfo(np.uint8).max\\
+	\indent m,n,c = img.shape\\
+	\\
+	\indent \# Creates the histogram\\
+	\indent his = np.zeros(MAX+1)\\
+	\indent cdf = np.zeros(MAX+1)\\
+	\\
+	\indent for x in range(0,c):\\
+	\indent \indent his[:] = 0\\
+	\indent \indent cdf[:] = 0\\
+	\\   
+	\indent \indent \# Calculate the histogram\\
+	\indent \indent for i in range(0, len(img)):\\
+	\indent \indent \indent for j in range(0, len(img[i])):\\
+	\\
+	\indent \indent \indent \indent his[ img[i,j,x] ] += 1\\
+	\\
+	\indent \indent \# Calculate the CDF   \\ 
+	\indent \indent cdf[0] = his[0]\\
+	\\
+	\indent \indent for i in range(1,len(cdf)):\\
+	\indent \indent \indent cdf[i] = his[i] + cdf[i - 1]\\
+	\\
+	\indent \indent cdf = cdf / (m*n) * MAX\\
+	\\
+	\indent \indent \# Apply the CDF\\
+	\indent \indent for i in range(0, len(img)):\\
+	\indent \indent \indent for j in range(0, len(img[i])):\\
+	\\
+	\indent \indent out\textunderscore img[i,j,x] = cdf[img[i,j,x]]\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	The output utilizes the Lenna image found in Image 9 as the input to produce the transformed output below. The transformation appears to remove the applied filter to the image whilst restoring the original colour of the image. There does appear to be some blue spots lingering around the image, notably around the neck of the person.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.5]{s325o1}\\
+		Image 11: Output Image 
+	\end{center}
+	
 	\subsubsection{Histogram Equalization - $\textrm{Y}^\prime$CbCr}
 	
 	This function is similar to the one described above, however the function is only applied to the Luma channel instead of all the channels. This is the exact implementation of the one used in Lab 3 as adjusting the Luma channel is the same as adjusting the intensity on a grayscale image.\\
+	
+	Code below:\\
+	
+	\noindent def histogram\textunderscore equalization\textunderscore ycbcr(img):\\
+	\\
+	\indent \# Check for unsigned integer 8-bit\\
+	\indent if img.dtype != np.uint8:\\
+	\indent \indent return img\\
+	\\
+	\indent img\textunderscore temp = rgb\textunderscore to\textunderscore ycbcr(img)\\
+	\indent img\textunderscore temp = np.array(img\textunderscore temp, np.uint8)\\
+	\\
+	\indent out\textunderscore img = img\textunderscore temp.copy()\\
+	\indent MAX = 255\\
+	\indent m,n,c = img.shape\\
+	\\
+	\indent \# Creates the histogram\\
+	\indent his = np.zeros(MAX+1)\\
+	\indent cdf = np.zeros(MAX+1)\\
+	\\
+	\indent \# Calculate the histogram\\
+	\indent for i in range(0, len(img)):\\
+	\indent \indent for j in range(0, len(img[i])):\\
+	\\
+	\indent \indent \indent his[ img\textunderscore temp[i,j,0] ] += 1\\
+	\\
+	\indent \# Calculate the CDF    \\
+	\indent cdf[0] = his[0]\\
+	\\
+	\indent for i in range(1,MAX+1):\\
+	\indent \indent t cdf[i] = his[i] + cdf[i - 1]\\
+	\\
+	\indent cdf = cdf / (m*n) * MAX\\
+	\\
+	\indent \# Apply the CDF\\
+	\indent for i in range(0, len(img)):\\
+	\indent \indent for j in range(0, len(img[i])):\\
+	\\
+	\indent \indent \indent out\textunderscore img[i,j,0] = cdf[img\textunderscore temp[i,j,0]]\\
+	\\
+	\indent out\textunderscore img = ycbcr\textunderscore to\textunderscore rgb(np.uint8(out\textunderscore img))\\
+	\\
+	\indent return out\textunderscore img\\
+	
+	Using the Lenna image, Image 9, as an input, we produce the following output below when transforming over the Luma channel. The result that was found was not expected as the issue may be within the conversion or the transformation in general.\\
+	
+	\begin{center}
+		\noindent \includegraphics[scale=0.5]{s326o1}\\
+		Image 12: Output Image 
+	\end{center}
 	
 	\section{Analysis}
 	

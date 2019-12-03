@@ -43,7 +43,10 @@ out_img6 = fun.change_saturation(img5, -0.1)
 bf.display_multiple_images([img5, out_img6])
 
 # Point Transform Colour
-out_img7 = fun.apply_point_tfrm(img5, 2, -20)
+c = 2
+b = -20
+
+out_img7 = fun.apply_point_tfrm(img5, c, b)
 
 bf.display_multiple_images([img5, out_img7])
 
@@ -54,7 +57,13 @@ sigma = 1
 r = 2
 
 gauss, gauss_sum = fun.gaussian_kernel(sigma, r)
-out_img8 = fun.spatial_filter(img1, gauss / gauss_sum)
+gauss = gauss / gauss_sum
+
+laplacian = np.array([[-1,-1,-1],
+                      [-1,8,-1],
+                      [-1,-1,-1]])
+
+out_img8 = fun.spatial_filter(img1, gauss)
 
 bf.display_multiple_images([img1, out_img8])
 

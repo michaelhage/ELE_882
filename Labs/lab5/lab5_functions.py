@@ -359,8 +359,6 @@ def histogram_equalization_ycbcr(img):
             
             out_img[i,j,0] = cdf[img_temp[i,j,0]]
     
-    
-    
     out_img = ycbcr_to_rgb(np.uint8(out_img))
     
     return out_img
